@@ -13,7 +13,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/uriegel/node-dotnet.git"
+        "url": "git+https://github.com/uriegel/node-dotnet-bridge.git"
     },
     "keywords": [
         "dotnet",
@@ -22,7 +22,7 @@
     "author": "Uwe Riegel",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/uriegel/node-dotnet/issues"
+        "url": "https://github.com/uriegel/node-dotnet-bridge/issues"
     },
-    "homepage": "https://github.com/uriegel/node-dotnet#readme"
+    "homepage": "https://github.com/uriegel/node-dotnet-bridge#readme"
 }
