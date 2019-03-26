@@ -1,1 +1,6 @@
 dist/
+.vscode/ipch
+node-dotnet/build/
+node_modules/node-dotnet/build/
+package-lock.json
+node_modules/

@@ -1,23 +1,22 @@
 {
-    "name": "node-dotnet-test",
-    "version": "1.0.0",
-    "description": "Test package for testing node-dotnet addon",
-    "main": "dist/index.js",
+    "name": "node-dotnet",
+    "version": "0.0.1",
+    "description": "Accessing dotnet core assemblies from node.js",
+    "main": "./build/Release/node-dotnet",
     "scripts": {
-        "start": "node dist/index.js",
-        "prestart": "npm run build",
-        "build": "tsc"
+        "install": "node-gyp rebuild"
     },
-    "dependencies": {
-        "node-dotnet": "file:./node-dotnet"
-    },
+    "gypfile": true,
+    "types": "node-dotnet.d.ts",    
     "repository": {
         "type": "git",
         "url": "git+https://github.com/uriegel/node-dotnet.git"
     },
     "keywords": [
         "dotnet",
-        "node-addon"
+        "node-addon",
+        "cpp",
+        "csharp"
     ],
     "author": "Uwe Riegel",
     "license": "MIT",
