@@ -15,7 +15,7 @@ for (let i = 0; i < 1000000; i++) {
 }
 console.log("hell16 " + (new Date).toTimeString())
 
-testLogging("Das was äber schön")
+testLogging("Das was äber schön 👌😁")
 
 unInitialize()
 
