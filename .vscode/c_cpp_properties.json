@@ -4,13 +4,13 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${USERPROFILE}/.node-gyp/10.0.0/include/node",
-                "${USERPROFILE}/.node-gyp/10.0.0/src",
-                "${USERPROFILE}/.node-gyp/10.0.0/deps/openssl/config",
-                "${USERPROFILE}/.node-gyp/10.0.0/deps/openssl/openssl/include",
-                "${USERPROFILE}/.node-gyp/10.0.0/deps/uv/include",
-                "${USERPROFILE}/.node-gyp/10.0.0/deps/zlib",
-                "${USERPROFILE}/.node-gyp/10.0.0/deps/v8/include"                
+                "${USERPROFILE}/.node-gyp/11.12.0/include/node",
+                "${USERPROFILE}/.node-gyp/11.12.0/src",
+                "${USERPROFILE}/.node-gyp/11.12.0/deps/openssl/config",
+                "${USERPROFILE}/.node-gyp/11.12.0/deps/openssl/openssl/include",
+                "${USERPROFILE}/.node-gyp/11.12.0/deps/uv/include",
+                "${USERPROFILE}/.node-gyp/11.12.0/deps/zlib",
+                "${USERPROFILE}/.node-gyp/11.12.0/deps/v8/include"                
             ],
             "defines": [
                 "_DEBUG",
