@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${USERPROFILE}/.node-gyp/10.0.0/include/node",
+                "${USERPROFILE}/.node-gyp/10.0.0/src",
+                "${USERPROFILE}/.node-gyp/10.0.0/deps/openssl/config",
+                "${USERPROFILE}/.node-gyp/10.0.0/deps/openssl/openssl/include",
+                "${USERPROFILE}/.node-gyp/10.0.0/deps/uv/include",
+                "${USERPROFILE}/.node-gyp/10.0.0/deps/zlib",
+                "${USERPROFILE}/.node-gyp/10.0.0/deps/v8/include"                
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.17763.0",
+            "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Preview/VC/Tools/MSVC/14.20.27508/bin/Hostx64/x64/cl.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "msvc-x64"
+        }
+    ],
+    "version": 4
+}
