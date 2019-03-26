@@ -1,0 +1,25 @@
+{
+    "name": "node-dotnet-test",
+    "version": "1.0.0",
+    "description": "Test package for testing node-dotnet addon",
+    "main": "index.js",
+    "scripts": {
+        "start": "node dist/index.js",
+        "prestart": "npm run build",
+        "build": "tsc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/uriegel/node-dotnet.git"
+    },
+    "keywords": [
+        "dotnet",
+        "node-addon"
+    ],
+    "author": "Uwe Riegel",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/uriegel/node-dotnet/issues"
+    },
+    "homepage": "https://github.com/uriegel/node-dotnet#readme"
+}
