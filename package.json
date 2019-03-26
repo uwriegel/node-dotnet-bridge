@@ -9,7 +9,7 @@
         "build": "tsc"
     },
     "dependencies": {
-        "node-dotnet": "file:./node-dotnet"
+        "node-dotnet-bridge": "file:./node-dotnet-bridge"
     },
     "repository": {
         "type": "git",

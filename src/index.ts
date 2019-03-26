@@ -1,4 +1,4 @@
-import { initialize, unInitialize, testLogging } from 'node-dotnet'
+import { initialize, unInitialize, testLogging } from 'node-dotnet-bridge'
 
 console.log("Start " + (new Date).toTimeString())
 

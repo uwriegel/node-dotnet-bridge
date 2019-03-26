@@ -1,8 +1,8 @@
 {
     "targets": [
         {
-            "target_name": "node-dotnet",
-            "sources": [ "node-dotnet.cpp" ],
+            "target_name": "node-dotnet-bridge",
+            "sources": [ "node-dotnet-bridge.cpp" ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")"
             ],            

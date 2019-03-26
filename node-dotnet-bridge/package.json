@@ -1,13 +1,13 @@
 {
-    "name": "node-dotnet",
+    "name": "node-dotnet-bridge",
     "version": "0.0.1",
     "description": "Accessing dotnet core assemblies from node.js",
-    "main": "./build/Release/node-dotnet",
+    "main": "./build/Release/node-dotnet-bridge",
     "scripts": {
         "install": "node-gyp rebuild"
     },
     "gypfile": true,
-    "types": "node-dotnet.d.ts",
+    "types": "node-dotnet-bridge.d.ts",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/uriegel/node-dotnet.git"
