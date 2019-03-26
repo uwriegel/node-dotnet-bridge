@@ -7,7 +7,7 @@
         "install": "node-gyp rebuild"
     },
     "gypfile": true,
-    "types": "node-dotnet.d.ts",    
+    "types": "node-dotnet.d.ts",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/uriegel/node-dotnet.git"
@@ -23,5 +23,8 @@
     "bugs": {
         "url": "https://github.com/uriegel/node-dotnet/issues"
     },
-    "homepage": "https://github.com/uriegel/node-dotnet#readme"
+    "homepage": "https://github.com/uriegel/node-dotnet#readme",
+    "dependencies": {
+        "nan": "^2.13.2"
+    }
 }
