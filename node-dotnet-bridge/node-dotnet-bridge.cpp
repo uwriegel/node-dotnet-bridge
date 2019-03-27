@@ -11,6 +11,7 @@ using namespace Nan;
 using namespace v8;
 
 v8::Persistent<Function> loggingCallbackPersist;
+Nan::Persistent<v8::String> statusPersist;
 
 void log(Isolate* isolate, const wchar_t* text) {
     auto str = String::NewFromTwoByte(isolate, (uint16_t*)text);
@@ -24,7 +25,7 @@ NAN_METHOD(Initialize) {
     auto callback = Local<Function>::Cast(info[0]);
     loggingCallbackPersist.Reset(isolate, callback);
 
-    const char* coreclrPath = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\2.2.3\\coreclr.dll";
+    const char* coreclrPath = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\2.2.2\\coreclr.dll";
 
 #if WINDOWS
  	// <Snippet1>
@@ -35,6 +36,8 @@ NAN_METHOD(Initialize) {
 #endif
 	if (!coreClr)
 		log(isolate, L"ERROR: Failed to load CoreCLR from");
+
+    statusPersist.Reset(New<String>("ready").ToLocalChecked());
 }
 
 NAN_METHOD(TestLogging) {
@@ -50,9 +53,13 @@ NAN_METHOD(UnInitialize) {
 }
 
 NAN_MODULE_INIT(init) {
-    Nan::Set(target, New<String>("initialize").ToLocalChecked(), GetFunction(New<FunctionTemplate>(Initialize)).ToLocalChecked());
-    Nan::Set(target, New<String>("testLogging").ToLocalChecked(), GetFunction(New<FunctionTemplate>(TestLogging)).ToLocalChecked());
-    Nan::Set(target, New<String>("unInitialize").ToLocalChecked(), GetFunction(New<FunctionTemplate>(UnInitialize)).ToLocalChecked());
+    Nan::Set(target, New<String>("initialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(Initialize)).ToLocalChecked());
+    Nan::Set(target, New<String>("testLogging").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(TestLogging)).ToLocalChecked());
+    Nan::Set(target, New<String>("unInitialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(UnInitialize)).ToLocalChecked());
+
+    auto status = New<String>("new").ToLocalChecked();
+    statusPersist.Reset(status);
+    Nan::Set(target, New<String>("status").ToLocalChecked(), status);
 }
 
 NODE_MODULE(node_dotnet, init)

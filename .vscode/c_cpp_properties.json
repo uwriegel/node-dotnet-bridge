@@ -4,7 +4,14 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/node-dotnet/node_modules/nan/"
+                "${workspaceFolder}/node_modules/nan/",
+                "${USERPROFILE}/.node-gyp/11.12.0/include/node",
+                "${USERPROFILE}/.node-gyp/11.12.0/src",
+                "${USERPROFILE}/.node-gyp/11.12.0/deps/openssl/config",
+                "${USERPROFILE}/.node-gyp/11.12.0/deps/openssl/openssl/include",
+                "${USERPROFILE}/.node-gyp/11.12.0/deps/uv/include",
+                "${USERPROFILE}/.node-gyp/11.12.0/deps/zlib",
+                "${USERPROFILE}/.node-gyp/11.12.0/deps/v8/include"                 
             ],
             "defines": [
                 "_DEBUG",
