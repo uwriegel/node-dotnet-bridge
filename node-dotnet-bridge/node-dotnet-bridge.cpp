@@ -3,6 +3,13 @@
 
 #if WINDOWS
 #include <Windows.h>
+#elif LINUX
+#include <dirent.h>
+#include <dlfcn.h>
+#include <limits.h>
+#define FS_SEPARATOR "/"
+#define PATH_DELIMITER ":"
+#define MAX_PATH PATH_MAX
 #endif
 
 using namespace std;
@@ -33,20 +40,23 @@ NAN_METHOD(Initialize) {
 
 #if WINDOWS
     auto clrBasePath = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\";
+    auto dllName = "coreclr.dll";
 #else
-    auto clrBasePath = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\";
+    auto clrBasePath = "/usr/share/dotnet/shared/Microsoft.NETCore.App/";
+    auto dllName = "libcoreclr.so";
 #endif
     auto resolveCoreclr = Local<Function>::Cast(settings->Get(New<String>("resolveCoreclr").ToLocalChecked()));
     auto var = New<String>(clrBasePath).ToLocalChecked();
-    Handle<Value> argv[] = { var };
-    auto res = resolveCoreclr->Call(isolate->GetCurrentContext()->Global(), 1, argv);
+    auto var2 = New<String>(dllName).ToLocalChecked();
+    Handle<Value> argv[] = { var, var2 };
+    auto res = resolveCoreclr->Call(isolate->GetCurrentContext()->Global(), 2, argv);
     v8::String::Utf8Value s(res);
     const char* coreclrPath = *s;
 
 #if WINDOWS
  	auto coreClr = LoadLibraryExA(coreclrPath, nullptr, 0);
 #elif LINUX
-	void* coreClr = dlopen(coreClrPath.c_str(), RTLD_NOW | RTLD_LOCAL);
+	void* coreClr = dlopen(coreclrPath, RTLD_NOW | RTLD_LOCAL);
 #endif
 	if (!coreClr)
 		log(isolate, L"ERROR: Failed to load CoreCLR from");

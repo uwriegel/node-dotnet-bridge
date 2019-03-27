@@ -12,6 +12,7 @@
                     }
                 ],
                 ['OS=="linux"', {        
+                        'defines': ['LINUX'] 
                     }
                 ]
             ]

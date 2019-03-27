@@ -1,11 +1,12 @@
 import * as fs from 'fs'
+import * as Path from 'path'
 import { initialize, unInitialize } from 'node-dotnet-bridge'
 
 const log = function(text: string) { console.log(text) }
 
-const resolveCoreclr = function(basePath: string) {
+const resolveCoreclr = function(basePath: string, dllName: string) {
     const version = fs.readdirSync(basePath).sort((a, b) => - a.localeCompare(b))[0]
-    const result = basePath + version + "\\coreclr.dll"
+    const result = Path.join(basePath + version, dllName)
     console.log("Loading dotnet core from " + result)
     return result
 }
