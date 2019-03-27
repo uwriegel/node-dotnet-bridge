@@ -9,6 +9,7 @@
         "build": "tsc"
     },
     "dependencies": {
+        "@types/node": "^11.12.0",
         "node-dotnet-bridge": "file:./node-dotnet-bridge"
     },
     "repository": {

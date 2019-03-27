@@ -1,15 +1,13 @@
-import { initialize, unInitialize, testLogging, status } from 'node-dotnet-bridge'
+import * as fs from 'fs'
+import { initialize, unInitialize } from 'node-dotnet-bridge'
 
-console.log("Start " + (new Date).toTimeString())
-
-const log = function(text: string) { console.log(text)}
-
-let aff = status
-console.log(status)
+const log = function(text: string) { console.log(text) }
 
 const resolveCoreclr = function(basePath: string) {
-    console.log(basePath)
-    return "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\2.2.2\\coreclr.dll"
+    const version = fs.readdirSync(basePath).sort((a, b) => - a.localeCompare(b))[0]
+    const result = basePath + version + "\\coreclr.dll"
+    console.log("Loading dotnet core from " + result)
+    return result
 }
 
 // TODO: logCallback: kann auch null sein, dann kein Logging
@@ -18,12 +16,5 @@ initialize({
     resolveCoreclr: resolveCoreclr
 })
 
-console.log(status)
-
-console.log("hell16 " + (new Date).toTimeString())
-
-testLogging("Das was äber schön 👌😁")
-
 unInitialize()
-
 console.log("Finished")

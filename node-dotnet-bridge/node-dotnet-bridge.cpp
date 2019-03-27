@@ -11,12 +11,15 @@ using namespace Nan;
 using namespace v8;
 
 v8::Persistent<Function> loggingCallbackPersist;
-Nan::Persistent<v8::String> statusPersist;
+
+void log(Isolate* isolate, v8::Local<String> str) {
+    Handle<Value> argv[] = { str };
+    Local<Function>::New(isolate, loggingCallbackPersist)->Call(isolate->GetCurrentContext()->Global(), 1, argv);
+}
 
 void log(Isolate* isolate, const wchar_t* text) {
     auto str = String::NewFromTwoByte(isolate, (uint16_t*)text);
-    Handle<Value> argv[] = { str };
-    Local<Function>::New(isolate, loggingCallbackPersist)->Call(isolate->GetCurrentContext()->Global(), 1, argv);
+    log(isolate, str); 
 }
 
 NAN_METHOD(Initialize) {
@@ -33,7 +36,6 @@ NAN_METHOD(Initialize) {
 #else
     auto clrBasePath = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\";
 #endif
-
     auto resolveCoreclr = Local<Function>::Cast(settings->Get(New<String>("resolveCoreclr").ToLocalChecked()));
     auto var = New<String>(clrBasePath).ToLocalChecked();
     Handle<Value> argv[] = { var };
@@ -42,16 +44,12 @@ NAN_METHOD(Initialize) {
     const char* coreclrPath = *s;
 
 #if WINDOWS
- 	// <Snippet1>
  	auto coreClr = LoadLibraryExA(coreclrPath, nullptr, 0);
- 	// </Snippet1>
 #elif LINUX
 	void* coreClr = dlopen(coreClrPath.c_str(), RTLD_NOW | RTLD_LOCAL);
 #endif
 	if (!coreClr)
 		log(isolate, L"ERROR: Failed to load CoreCLR from");
-
-    statusPersist.Reset(New<String>("ready").ToLocalChecked());
 }
 
 NAN_METHOD(TestLogging) {
@@ -68,12 +66,7 @@ NAN_METHOD(UnInitialize) {
 
 NAN_MODULE_INIT(init) {
     Nan::Set(target, New<String>("initialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(Initialize)).ToLocalChecked());
-    Nan::Set(target, New<String>("testLogging").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(TestLogging)).ToLocalChecked());
     Nan::Set(target, New<String>("unInitialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(UnInitialize)).ToLocalChecked());
-
-    auto status = New<String>("new").ToLocalChecked();
-    statusPersist.Reset(status);
-    Nan::Set(target, New<String>("status").ToLocalChecked(), status);
 }
 
 NODE_MODULE(node_dotnet, init)
