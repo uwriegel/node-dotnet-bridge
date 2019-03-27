@@ -22,7 +22,9 @@ void log(Isolate* isolate, const wchar_t* text) {
 NAN_METHOD(Initialize) {
     auto isolate = info.GetIsolate();
 
-    auto callback = Local<Function>::Cast(info[0]);
+    auto settings = Handle<Object>::Cast(info[0]);
+    auto loggingValue = settings->Get(New<String>("logCallback").ToLocalChecked());
+    auto callback = Local<Function>::Cast(loggingValue);
     loggingCallbackPersist.Reset(isolate, callback);
 
     const char* coreclrPath = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\2.2.2\\coreclr.dll";

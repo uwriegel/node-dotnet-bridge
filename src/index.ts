@@ -7,7 +7,10 @@ const log = function(text: string) { console.log(text)}
 let aff = status
 console.log(status)
 
-initialize(log)
+// TODO: logCallback: kann auch null sein, dann kein Logging
+initialize({
+    logCallback: log
+})
 
 console.log(status)
 
