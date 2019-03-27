@@ -24,10 +24,22 @@ NAN_METHOD(Initialize) {
 
     auto settings = Handle<Object>::Cast(info[0]);
     auto loggingValue = settings->Get(New<String>("logCallback").ToLocalChecked());
+
     auto callback = Local<Function>::Cast(loggingValue);
     loggingCallbackPersist.Reset(isolate, callback);
 
-    const char* coreclrPath = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\2.2.2\\coreclr.dll";
+#if WINDOWS
+    auto clrBasePath = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\";
+#else
+    auto clrBasePath = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\";
+#endif
+
+    auto resolveCoreclr = Local<Function>::Cast(settings->Get(New<String>("resolveCoreclr").ToLocalChecked()));
+    auto var = New<String>(clrBasePath).ToLocalChecked();
+    Handle<Value> argv[] = { var };
+    auto res = resolveCoreclr->Call(isolate->GetCurrentContext()->Global(), 1, argv);
+    v8::String::Utf8Value s(res);
+    const char* coreclrPath = *s;
 
 #if WINDOWS
  	// <Snippet1>

@@ -7,7 +7,8 @@
 
 declare module 'node-dotnet-bridge' {
     interface Settings {
-        logCallback: (text: string)=>void
+        logCallback: ((text: string)=>void) | undefined
+        resolveCoreclr: (text: string)=>string 
     }
 
     function initialize(settings: Settings): void
