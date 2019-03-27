@@ -23,7 +23,7 @@
     "bugs": {
         "url": "https://github.com/uriegel/node-dotnet-bridge/issues"
     },
-    "homepage": "https://github.com/uriegel/node-dotnet-bridge#readme",
+    "homepage": "https://github.com/uriegel/node-dotnet-bridge/blob/master/README.md",
     "dependencies": {
         "nan": "^2.13.2"
     }
