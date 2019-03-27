@@ -12,6 +12,9 @@
 #define MAX_PATH PATH_MAX
 #endif
 
+// https://github.com/dotnet/coreclr/blob/master/src/coreclr/hosts/inc/coreclrhost.h
+#include "coreclrhost.h"
+
 using namespace std;
 
 using namespace Nan;
@@ -58,16 +61,37 @@ NAN_METHOD(Initialize) {
 #elif LINUX
 	void* coreClr = dlopen(coreclrPath, RTLD_NOW | RTLD_LOCAL);
 #endif
-	if (!coreClr)
+	if (!coreClr) {
 		log(isolate, L"ERROR: Failed to load CoreCLR from");
-}
+        return;
+    }
 
-NAN_METHOD(TestLogging) {
-    auto isolate = info.GetIsolate();
+#if WINDOWS
+	coreclr_initialize_ptr initializeCoreClr = (coreclr_initialize_ptr)GetProcAddress(coreClr, "coreclr_initialize");
+	coreclr_create_delegate_ptr createManagedDelegate = (coreclr_create_delegate_ptr)GetProcAddress(coreClr, "coreclr_create_delegate");
+	coreclr_shutdown_ptr shutdownCoreClr = (coreclr_shutdown_ptr)GetProcAddress(coreClr, "coreclr_shutdown");
+#elif LINUX
+	coreclr_initialize_ptr initializeCoreClr = (coreclr_initialize_ptr)dlsym(coreClr, "coreclr_initialize");
+	coreclr_create_delegate_ptr createManagedDelegate = (coreclr_create_delegate_ptr)dlsym(coreClr, "coreclr_create_delegate");
+	coreclr_shutdown_ptr shutdownCoreClr = (coreclr_shutdown_ptr)dlsym(coreClr, "coreclr_shutdown");
+#endif
 
-    v8::String::Value s(info[0]);
-    log(isolate, (wchar_t*)*s);
-    log(isolate, L"Däs wäre schön mit Nan 😢😢");
+	if (!initializeCoreClr) {
+		log(isolate, L"coreclr_initialize not found");
+		return;
+	}
+
+	if (!createManagedDelegate) {
+		log(isolate, L"coreclr_create_delegate not found");
+		return;
+	}
+
+	if (!shutdownCoreClr) {
+		log(isolate, L"coreclr_shutdown not found");
+		return;
+	}        
+
+    log(isolate, L"Initialization finished");
 }
 
 NAN_METHOD(UnInitialize) {
