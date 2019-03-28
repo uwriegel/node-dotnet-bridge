@@ -6,9 +6,20 @@ const log = function(text: string) { console.log(text) }
 
 const resolveCoreclr = function(basePath: string, dllName: string) {
     const version = fs.readdirSync(basePath).sort((a, b) => - a.localeCompare(b))[0]
-    const result = Path.join(basePath + version, dllName)
-    console.log("Loading dotnet core from " + result)
-    return result
+    const path = basePath + version
+    const dllPath = Path.join(path, dllName)
+    console.log("Loading dotnet core from " + dllPath)
+
+
+    console.log(__dirname)
+
+
+
+    return {
+        path: path,
+        dll: dllPath,
+        assemblies: [] as string[]
+    }
 }
 
 // TODO: logCallback: kann auch null sein, dann kein Logging

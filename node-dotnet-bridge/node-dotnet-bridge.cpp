@@ -1,5 +1,6 @@
 #include <nan.h>
 #include <string>
+#include <codecvt>
 
 #if WINDOWS
 #include <Windows.h>
@@ -7,18 +8,26 @@
 #include <dirent.h>
 #include <dlfcn.h>
 #include <limits.h>
-#define FS_SEPARATOR "/"
-#define PATH_DELIMITER ":"
-#define MAX_PATH PATH_MAX
 #endif
 
 // https://github.com/dotnet/coreclr/blob/master/src/coreclr/hosts/inc/coreclrhost.h
 #include "coreclrhost.h"
+#include "loader.h"
 
 using namespace std;
 
 using namespace Nan;
 using namespace v8;
+
+string ws2utf8(const wstring &input) {
+	wstring_convert<codecvt_utf8<wchar_t>> utf8conv;
+	return utf8conv.to_bytes(input);
+}
+
+wstring utf82ws(const string &input) {
+	wstring_convert<codecvt_utf8<wchar_t>> utf8conv;
+	return utf8conv.from_bytes(input);
+}
 
 v8::Persistent<Function> loggingCallbackPersist;
 
@@ -53,13 +62,16 @@ NAN_METHOD(Initialize) {
     auto var2 = New<String>(dllName).ToLocalChecked();
     Handle<Value> argv[] = { var, var2 };
     auto res = resolveCoreclr->Call(isolate->GetCurrentContext()->Global(), 2, argv);
-    v8::String::Utf8Value s(res);
-    const char* coreclrPath = *s;
+    auto pathResult = Handle<Object>::Cast(res);
+    String::Utf8Value coreclrPathValue(pathResult->Get(New<String>("path").ToLocalChecked()));
+    auto coreclrPath = *coreclrPathValue;
+    String::Utf8Value coreclrDllPathValue(pathResult->Get(New<String>("dll").ToLocalChecked()));
+    auto coreclrDllPath = *coreclrDllPathValue;
 
 #if WINDOWS
- 	auto coreClr = LoadLibraryExA(coreclrPath, nullptr, 0);
+ 	auto coreClr = LoadLibraryExA(coreclrDllPath, nullptr, 0);
 #elif LINUX
-	void* coreClr = dlopen(coreclrPath, RTLD_NOW | RTLD_LOCAL);
+	void* coreClr = dlopen(coreclrDllPath, RTLD_NOW | RTLD_LOCAL);
 #endif
 	if (!coreClr) {
 		log(isolate, L"ERROR: Failed to load CoreCLR from");
@@ -90,6 +102,16 @@ NAN_METHOD(Initialize) {
 		log(isolate, L"coreclr_shutdown not found");
 		return;
 	}        
+
+	// Construct the trusted platform assemblies (TPA) list
+	// This is the list of assemblies that .NET Core can load as
+	// trusted system assemblies.
+	// For this host (as with most), assemblies next to CoreCLR will
+	// be included in the TPA list
+	string tpaList;
+	BuildTpaList(coreclrPath, ".dll", tpaList);
+    // auto logtext = wstring(L"TPA list: ") + utf82ws(tpaList);
+    // log(isolate, logtext.c_str());
 
     log(isolate, L"Initialization finished");
 }
