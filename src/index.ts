@@ -25,12 +25,14 @@ const resolveCoreclr = function(basePath: string, dllName: string) {
 	// order to keep this sample concise.
     const coreAssemblies = fs.readdirSync(path).filter(n => n.endsWith(".dll")).map(n => Path.join(path, n))
     const appPath = Path.join(__dirname, "..", "node_modules", "node-dotnet-bridge")
-    const assemblies = [Path.join(appPath, "ManagedLibrary.dll")]
-                        .concat(coreAssemblies)
+    const assemblies = [
+        Path.join(appPath, "ManagedLibrary.dll"), 
+        Path.join(appPath, "..", "..", "Standard.dll")]
+        .concat(coreAssemblies)
 
-    assemblies.forEach(n => console.log(n))
+    //assemblies.forEach(n => console.log(n))
     const tpaList = assemblies.join(Path.delimiter)
-    console.log(tpaList)
+    //console.log(tpaList)
 
     console.log(__dirname)
 

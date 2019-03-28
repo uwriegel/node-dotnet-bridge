@@ -34,10 +34,24 @@ wstring utf82ws(const string &input) {
 }
 
 v8::Persistent<Function> loggingCallbackPersist;
+coreclr_shutdown_ptr shutdownCoreClr = nullptr;
+void* hostHandle;
+unsigned int domainId;
+#if WINDOWS
+ 	HMODULE coreClr;
+#elif LINUX
+	void* coreClr;
+#endif
 
 void log(Isolate* isolate, v8::Local<String> str) {
     Handle<Value> argv[] = { str };
     Local<Function>::New(isolate, loggingCallbackPersist)->Call(isolate->GetCurrentContext()->Global(), 1, argv);
+}
+
+int ReportProgressCallback(int progress) {
+	// Just print the progress parameter to the console and return -progress
+	printf("Received status from managed code: %d\n", progress);
+	return -progress;
 }
 
 void log(Isolate* isolate, const wchar_t* text) {
@@ -77,9 +91,9 @@ NAN_METHOD(Initialize) {
     auto appPath = *appPathValue;
 
 #if WINDOWS
- 	auto coreClr = LoadLibraryExA(coreclrDllPath, nullptr, 0);
+ 	coreClr = LoadLibraryExA(coreclrDllPath, nullptr, 0);
 #elif LINUX
-	void* coreClr = dlopen(coreclrDllPath, RTLD_NOW | RTLD_LOCAL);
+	coreClr = dlopen(coreclrDllPath, RTLD_NOW | RTLD_LOCAL);
 #endif
 	if (!coreClr) {
 		log(isolate, L"ERROR: Failed to load CoreCLR from");
@@ -89,7 +103,7 @@ NAN_METHOD(Initialize) {
 #if WINDOWS
 	coreclr_initialize_ptr initializeCoreClr = (coreclr_initialize_ptr)GetProcAddress(coreClr, "coreclr_initialize");
 	coreclr_create_delegate_ptr createManagedDelegate = (coreclr_create_delegate_ptr)GetProcAddress(coreClr, "coreclr_create_delegate");
-	coreclr_shutdown_ptr shutdownCoreClr = (coreclr_shutdown_ptr)GetProcAddress(coreClr, "coreclr_shutdown");
+	shutdownCoreClr = (coreclr_shutdown_ptr)GetProcAddress(coreClr, "coreclr_shutdown");
 #elif LINUX
 	coreclr_initialize_ptr initializeCoreClr = (coreclr_initialize_ptr)dlsym(coreClr, "coreclr_initialize");
 	coreclr_create_delegate_ptr createManagedDelegate = (coreclr_create_delegate_ptr)dlsym(coreClr, "coreclr_create_delegate");
@@ -122,9 +136,6 @@ NAN_METHOD(Initialize) {
 	const char* propertyValues[] = {
 		tpaList
 	};
-
-    void* hostHandle;
-	unsigned int domainId;
 
 	// This function both starts the .NET Core runtime and creates
 	// the default (and only) AppDomain
@@ -164,10 +175,73 @@ NAN_METHOD(Initialize) {
 		return;
 	}
 
+    // Invoke the managed delegate and write the returned string to the console
+	const auto assemblyName = "Standard";
+	auto ret = managedLoadDelegate(assemblyName);
+    wchar_t buffer [1000];
+    wsprintfW(buffer, L"Managed code returned: %d", ret);
+	log(isolate, buffer);
+
+	doWork_ptr managedDelegate;
+
+	// The assembly name passed in the third parameter is a managed assembly name
+	// as described at https://docs.microsoft.com/dotnet/framework/app-domains/assembly-names
+	hr = createManagedDelegate(
+		hostHandle,
+		domainId,
+		//"ManagedLibrary, Version=1.0.0.0",
+		assemblyName,
+		"Standard.ManagedWorker",
+		"DoWork",
+		(void**)& managedDelegate);
+	
+	if (hr >= 0)
+		log(isolate, L"Managed delegate created");
+	else {
+		log(isolate, L"coreclr_create_delegate failed"); // - status: 0x%08x\n", hr);
+		return;
+	}
+
+	// Create sample data for the double[] argument of the managed method to be called
+	double data[4];
+	data[0] = 0;
+	data[1] = 0.25;
+	data[2] = 0.5;
+	data[3] = 0.75;
+
+	// Invoke the managed delegate and write the returned string to the console
+	auto ret2 = managedDelegate("Test job Neu", 5, sizeof(data) / sizeof(double), data, ReportProgressCallback);
+    log(isolate, utf82ws(ret2).c_str());
+
+	// Strings returned to native code must be freed by the native code
+#if WINDOWS
+	CoTaskMemFree(ret2);
+#elif LINUX
+	free(ret2);
+#endif
+        
     log(isolate, L"Initialization finished");
 }
 
 NAN_METHOD(UnInitialize) {
+    auto isolate = info.GetIsolate();
+
+    if (shutdownCoreClr) {
+        auto hr = shutdownCoreClr(hostHandle, domainId);
+        if (hr >= 0)
+            log(isolate, L"CoreCLR successfully shutdown\n");
+        else
+            log(isolate, L"coreclr_shutdown failed"); //- status: 0x%08x\n", hr);
+    }
+	// Unload CoreCLR
+#if WINDOWS
+	if (!FreeLibrary(coreClr))
+		log(isolate, L"Failed to free coreclr.dll");
+#elif LINUX
+	if (dlclose(coreClr))
+		log(isolate, L"Failed to free libcoreclr.so\n");
+#endif
+
     loggingCallbackPersist.Reset();
 }
 
