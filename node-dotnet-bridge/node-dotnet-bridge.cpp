@@ -18,6 +18,11 @@ using namespace std;
 using namespace Nan;
 using namespace v8;
 
+// Function pointer types for the managed call and callback
+typedef int (*report_callback_ptr)(int progress);
+typedef char* (*doWork_ptr)(const char* jobName, int iterations, int dataSize, double* data, report_callback_ptr callbackFunction);
+typedef bool (*load_ptr)(const char* assemblyName);
+
 string ws2utf8(const wstring &input) {
 	wstring_convert<codecvt_utf8<wchar_t>> utf8conv;
 	return utf8conv.to_bytes(input);
@@ -136,6 +141,26 @@ NAN_METHOD(Initialize) {
         log(isolate, L"CoreCLR started\n");
 	else {
         log(isolate, L"coreclr_initialize failed\n"); //printf("coreclr_initialize failed - status: 0x%08x\n", hr);
+		return;
+	}
+
+  	load_ptr managedLoadDelegate;
+	// The assembly name passed in the third parameter is a managed assembly name
+	// as described at https://docs.microsoft.com/dotnet/framework/app-domains/assembly-names
+	hr = createManagedDelegate(
+		hostHandle,
+		domainId,
+		//"ManagedLibrary, Version=1.0.0.0",
+		"ManagedLibrary",
+		"ManagedLibrary.ManagedWorker",
+		"Load",
+		(void**)& managedLoadDelegate);
+
+	if (hr >= 0)
+		log(isolate, L"Managed delegate created\n");
+	else
+	{
+		log(isolate, L"coreclr_create_delegate failed"); // - status: 0x%08x\n", hr);
 		return;
 	}
 
