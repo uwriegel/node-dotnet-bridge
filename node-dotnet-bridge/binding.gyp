@@ -3,8 +3,7 @@
         {
             "target_name": "node-dotnet-bridge",
             "sources": [ 
-                "node-dotnet-bridge.cpp",
-                "loader.cpp"
+                "node-dotnet-bridge.cpp"
             ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")"

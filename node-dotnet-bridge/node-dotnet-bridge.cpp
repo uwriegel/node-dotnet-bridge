@@ -12,7 +12,6 @@
 
 // https://github.com/dotnet/coreclr/blob/master/src/coreclr/hosts/inc/coreclrhost.h
 #include "coreclrhost.h"
-#include "loader.h"
 
 using namespace std;
 
@@ -67,6 +66,8 @@ NAN_METHOD(Initialize) {
     auto coreclrPath = *coreclrPathValue;
     String::Utf8Value coreclrDllPathValue(pathResult->Get(New<String>("dll").ToLocalChecked()));
     auto coreclrDllPath = *coreclrDllPathValue;
+    String::Utf8Value tpaListValue(pathResult->Get(New<String>("tpaList").ToLocalChecked()));
+    auto tpaList = *tpaListValue;
 
 #if WINDOWS
  	auto coreClr = LoadLibraryExA(coreclrDllPath, nullptr, 0);
@@ -103,13 +104,6 @@ NAN_METHOD(Initialize) {
 		return;
 	}        
 
-	// Construct the trusted platform assemblies (TPA) list
-	// This is the list of assemblies that .NET Core can load as
-	// trusted system assemblies.
-	// For this host (as with most), assemblies next to CoreCLR will
-	// be included in the TPA list
-	string tpaList;
-	BuildTpaList(coreclrPath, ".dll", tpaList);
     // auto logtext = wstring(L"TPA list: ") + utf82ws(tpaList);
     // log(isolate, logtext.c_str());
 

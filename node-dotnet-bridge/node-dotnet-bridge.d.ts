@@ -2,8 +2,7 @@ declare module 'node-dotnet-bridge' {
     interface CorePathResult {
         path: string
         dll: string
-        // TODO: Path to assemblies
-        assemblies: string[]
+        tpaList: string
     }
     
     interface Settings {
