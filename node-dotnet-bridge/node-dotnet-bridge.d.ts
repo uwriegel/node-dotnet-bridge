@@ -1,6 +1,7 @@
 declare module 'node-dotnet-bridge' {
     interface CorePathResult {
         path: string
+        appPath: string
         dll: string
         tpaList: string
     }

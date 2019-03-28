@@ -24,7 +24,8 @@ const resolveCoreclr = function(basePath: string, dllName: string) {
 	// cause anything to fail, though, so this function just enumerates all dll's in
 	// order to keep this sample concise.
     const coreAssemblies = fs.readdirSync(path).filter(n => n.endsWith(".dll")).map(n => Path.join(path, n))
-    const assemblies = [Path.join(__dirname, "..", "node_modules", "node-dotnet-bridge", "ManagedLibrary.dll")]
+    const appPath = Path.join(__dirname, "..", "node_modules", "node-dotnet-bridge")
+    const assemblies = [Path.join(appPath, "ManagedLibrary.dll")]
                         .concat(coreAssemblies)
 
     assemblies.forEach(n => console.log(n))
@@ -35,6 +36,7 @@ const resolveCoreclr = function(basePath: string, dllName: string) {
 
     return {
         path: path,
+        appPath: appPath,
         dll: dllPath,
         tpaList: tpaList
     }

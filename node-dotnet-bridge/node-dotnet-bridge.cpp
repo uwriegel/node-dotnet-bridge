@@ -68,6 +68,8 @@ NAN_METHOD(Initialize) {
     auto coreclrDllPath = *coreclrDllPathValue;
     String::Utf8Value tpaListValue(pathResult->Get(New<String>("tpaList").ToLocalChecked()));
     auto tpaList = *tpaListValue;
+    String::Utf8Value appPathValue(pathResult->Get(New<String>("appPath").ToLocalChecked()));
+    auto appPath = *appPathValue;
 
 #if WINDOWS
  	auto coreClr = LoadLibraryExA(coreclrDllPath, nullptr, 0);
@@ -104,8 +106,38 @@ NAN_METHOD(Initialize) {
 		return;
 	}        
 
-    // auto logtext = wstring(L"TPA list: ") + utf82ws(tpaList);
-    // log(isolate, logtext.c_str());
+	// Define CoreCLR properties
+	// Other properties related to assembly loading are common here,
+	// but for this simple sample, TRUSTED_PLATFORM_ASSEMBLIES is all
+	// that is needed. Check hosting documentation for other common properties.
+	const char* propertyKeys[] = {
+		"TRUSTED_PLATFORM_ASSEMBLIES"      // Trusted assemblies
+	};
+
+	const char* propertyValues[] = {
+		tpaList
+	};
+
+    void* hostHandle;
+	unsigned int domainId;
+
+	// This function both starts the .NET Core runtime and creates
+	// the default (and only) AppDomain
+	int hr = initializeCoreClr(
+		appPath,
+		"NodeDotnetBridge", // AppDomain friendly name
+		sizeof(propertyKeys) / sizeof(char*),   // Property count
+		propertyKeys,       // Property names
+		propertyValues,     // Property values
+		&hostHandle,        // Host handle
+		&domainId);         // AppDomain ID
+
+	if (hr >= 0)
+        log(isolate, L"CoreCLR started\n");
+	else {
+        log(isolate, L"coreclr_initialize failed\n"); //printf("coreclr_initialize failed - status: 0x%08x\n", hr);
+		return;
+	}
 
     log(isolate, L"Initialization finished");
 }
