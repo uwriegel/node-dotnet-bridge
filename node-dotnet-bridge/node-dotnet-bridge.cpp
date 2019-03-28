@@ -1,5 +1,6 @@
 #include <nan.h>
 #include <string>
+#include <locale>
 #include <codecvt>
 
 #if WINDOWS
@@ -59,6 +60,11 @@ void log(Isolate* isolate, const wchar_t* text) {
     log(isolate, str); 
 }
 
+void log(Isolate* isolate, const char* text) {
+    auto str = New<String>(text).ToLocalChecked();
+    log(isolate, str); 
+}
+
 NAN_METHOD(Initialize) {
     auto isolate = info.GetIsolate();
 
@@ -96,7 +102,7 @@ NAN_METHOD(Initialize) {
 	coreClr = dlopen(coreclrDllPath, RTLD_NOW | RTLD_LOCAL);
 #endif
 	if (!coreClr) {
-		log(isolate, L"ERROR: Failed to load CoreCLR from");
+		log(isolate, "ERROR: Failed to load CoreCLR from");
         return;
     }
 
@@ -111,17 +117,17 @@ NAN_METHOD(Initialize) {
 #endif
 
 	if (!initializeCoreClr) {
-		log(isolate, L"coreclr_initialize not found");
+		log(isolate, "coreclr_initialize not found");
 		return;
 	}
 
 	if (!createManagedDelegate) {
-		log(isolate, L"coreclr_create_delegate not found");
+		log(isolate, "coreclr_create_delegate not found");
 		return;
 	}
 
 	if (!shutdownCoreClr) {
-		log(isolate, L"coreclr_shutdown not found");
+		log(isolate, "coreclr_shutdown not found");
 		return;
 	}        
 
@@ -149,9 +155,9 @@ NAN_METHOD(Initialize) {
 		&domainId);         // AppDomain ID
 
 	if (hr >= 0)
-        log(isolate, L"CoreCLR started\n");
+        log(isolate, "CoreCLR started\n");
 	else {
-        log(isolate, L"coreclr_initialize failed\n"); //printf("coreclr_initialize failed - status: 0x%08x\n", hr);
+        log(isolate, "coreclr_initialize failed\n"); //printf("coreclr_initialize failed - status: 0x%08x\n", hr);
 		return;
 	}
 
@@ -168,18 +174,18 @@ NAN_METHOD(Initialize) {
 		(void**)& managedLoadDelegate);
 
 	if (hr >= 0)
-		log(isolate, L"Managed delegate created\n");
+		log(isolate, "Managed delegate created\n");
 	else
 	{
-		log(isolate, L"coreclr_create_delegate failed"); // - status: 0x%08x\n", hr);
+		log(isolate, "coreclr_create_delegate failed"); // - status: 0x%08x\n", hr);
 		return;
 	}
 
     // Invoke the managed delegate and write the returned string to the console
 	const auto assemblyName = "Standard";
 	auto ret = managedLoadDelegate(assemblyName);
-    wchar_t buffer [1000];
-    wsprintfW(buffer, L"Managed code returned: %d", ret);
+    char buffer [1000];
+    sprintf(buffer, "Managed code returned: %d", ret);
 	log(isolate, buffer);
 
 	doWork_ptr managedDelegate;
@@ -196,9 +202,9 @@ NAN_METHOD(Initialize) {
 		(void**)& managedDelegate);
 	
 	if (hr >= 0)
-		log(isolate, L"Managed delegate created");
+		log(isolate, "Managed delegate created");
 	else {
-		log(isolate, L"coreclr_create_delegate failed"); // - status: 0x%08x\n", hr);
+		log(isolate, "coreclr_create_delegate"); //- status: 0x%08x\n", hr);
 		return;
 	}
 
@@ -211,7 +217,7 @@ NAN_METHOD(Initialize) {
 
 	// Invoke the managed delegate and write the returned string to the console
 	auto ret2 = managedDelegate("Test job Neu", 5, sizeof(data) / sizeof(double), data, ReportProgressCallback);
-    log(isolate, utf82ws(ret2).c_str());
+    log(isolate, ret2);
 
 	// Strings returned to native code must be freed by the native code
 #if WINDOWS
@@ -220,7 +226,7 @@ NAN_METHOD(Initialize) {
 	free(ret2);
 #endif
         
-    log(isolate, L"Initialization finished");
+    log(isolate, "Initialization finished");
 }
 
 NAN_METHOD(UnInitialize) {
@@ -229,17 +235,17 @@ NAN_METHOD(UnInitialize) {
     if (shutdownCoreClr) {
         auto hr = shutdownCoreClr(hostHandle, domainId);
         if (hr >= 0)
-            log(isolate, L"CoreCLR successfully shutdown\n");
+            log(isolate, "CoreCLR successfully shutdown\n");
         else
-            log(isolate, L"coreclr_shutdown failed"); //- status: 0x%08x\n", hr);
+            log(isolate, "coreclr_shutdown failed"); //- status: 0x%08x\n", hr);
     }
 	// Unload CoreCLR
 #if WINDOWS
 	if (!FreeLibrary(coreClr))
-		log(isolate, L"Failed to free coreclr.dll");
+		log(isolate, "Failed to free coreclr.dll");
 #elif LINUX
 	if (dlclose(coreClr))
-		log(isolate, L"Failed to free libcoreclr.so\n");
+		log(isolate, "Failed to free libcoreclr.so\n");
 #endif
 
     loggingCallbackPersist.Reset();

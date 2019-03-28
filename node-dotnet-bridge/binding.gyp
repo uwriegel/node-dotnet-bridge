@@ -8,6 +8,7 @@
             "include_dirs": [
                 "<!(node -e \"require('nan')\")"
             ],            
+            "cflags": ["-Wall", "-std=c++14"],
             "conditions": [
                 ['OS=="win"', {
                      'defines': ['WINDOWS']   
