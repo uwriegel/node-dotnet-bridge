@@ -5,3 +5,7 @@ node_modules/node-dotnet/build/
 package-lock.json
 node_modules/
 build
+.vs/NodeDotnet/v15/
+NodeDotnet/.vs/NodeDotnet/v15
+NodeDotnet/bin
+NodeDotnet/obj

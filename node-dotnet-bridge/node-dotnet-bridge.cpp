@@ -22,7 +22,8 @@ using namespace v8;
 // Function pointer types for the managed call and callback
 typedef int (*report_callback_ptr)(int progress);
 typedef char* (*doWork_ptr)(const char* jobName, int iterations, int dataSize, double* data, report_callback_ptr callbackFunction);
-typedef bool (*load_ptr)(const char* assemblyName);
+typedef wchar_t* (*executeSyncPtr)(const wchar_t* payload);
+executeSyncPtr executeSyncDelegate;
 
 string ws2utf8(const wstring &input) {
 	wstring_convert<codecvt_utf8<wchar_t>> utf8conv;
@@ -161,17 +162,16 @@ NAN_METHOD(Initialize) {
 		return;
 	}
 
-  	load_ptr managedLoadDelegate;
 	// The assembly name passed in the third parameter is a managed assembly name
 	// as described at https://docs.microsoft.com/dotnet/framework/app-domains/assembly-names
 	hr = createManagedDelegate(
 		hostHandle,
 		domainId,
-		//"ManagedLibrary, Version=1.0.0.0",
-		"ManagedLibrary",
-		"ManagedLibrary.ManagedWorker",
-		"Load",
-		(void**)& managedLoadDelegate);
+		//"NodeDotnet, Version=1.0.0.0",
+		"NodeDotnet",
+		"NodeDotnet.Bridge",
+		"ExecuteSync",
+		(void**)& executeSyncDelegate);
 
 	if (hr >= 0)
 		log(isolate, "Managed delegate created\n");
@@ -181,49 +181,13 @@ NAN_METHOD(Initialize) {
 		return;
 	}
 
-    // Invoke the managed delegate and write the returned string to the console
-	const auto assemblyName = "Standard";
-	auto ret = managedLoadDelegate(assemblyName);
-    char buffer [1000];
-    sprintf(buffer, "Managed code returned: %d", ret);
-	log(isolate, buffer);
+	auto ret = executeSyncDelegate(L"Das kömmt äüs däm ßchönen Äddon");
+	log(isolate, ret);
 
-	doWork_ptr managedDelegate;
-
-	// The assembly name passed in the third parameter is a managed assembly name
-	// as described at https://docs.microsoft.com/dotnet/framework/app-domains/assembly-names
-	hr = createManagedDelegate(
-		hostHandle,
-		domainId,
-		//"ManagedLibrary, Version=1.0.0.0",
-		assemblyName,
-		"Standard.ManagedWorker",
-		"DoWork",
-		(void**)& managedDelegate);
-	
-	if (hr >= 0)
-		log(isolate, "Managed delegate created");
-	else {
-		log(isolate, "coreclr_create_delegate"); //- status: 0x%08x\n", hr);
-		return;
-	}
-
-	// Create sample data for the double[] argument of the managed method to be called
-	double data[4];
-	data[0] = 0;
-	data[1] = 0.25;
-	data[2] = 0.5;
-	data[3] = 0.75;
-
-	// Invoke the managed delegate and write the returned string to the console
-	auto ret2 = managedDelegate("Test job Neu", 5, sizeof(data) / sizeof(double), data, ReportProgressCallback);
-    log(isolate, ret2);
-
-	// Strings returned to native code must be freed by the native code
 #if WINDOWS
-	CoTaskMemFree(ret2);
+	CoTaskMemFree(ret);
 #elif LINUX
-	free(ret2);
+	free(ret);
 #endif
         
     log(isolate, "Initialization finished");
@@ -251,9 +215,24 @@ NAN_METHOD(UnInitialize) {
     loggingCallbackPersist.Reset();
 }
 
+NAN_METHOD(Test) {
+    auto isolate = info.GetIsolate();
+
+    v8::String::Value s(info[0]);
+	auto ret = executeSyncDelegate((wchar_t*)*s);
+	log(isolate, ret);
+#if WINDOWS
+	CoTaskMemFree(ret);
+#elif LINUX
+	free(ret);
+#endif
+}
+
 NAN_MODULE_INIT(init) {
     Nan::Set(target, New<String>("initialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(Initialize)).ToLocalChecked());
     Nan::Set(target, New<String>("unInitialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(UnInitialize)).ToLocalChecked());
+
+    Nan::Set(target, New<String>("test").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(Test)).ToLocalChecked());
 }
 
 NODE_MODULE(node_dotnet, init)

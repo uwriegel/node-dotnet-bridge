@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as Path from 'path'
-import { initialize, unInitialize } from 'node-dotnet-bridge'
+import { initialize, unInitialize, test } from 'node-dotnet-bridge'
 
 const log = function(text: string) { console.log(text) }
 
@@ -25,8 +25,8 @@ const resolveCoreclr = function(basePath: string, dllName: string) {
     const coreAssemblies = fs.readdirSync(path).filter(n => n.endsWith(".dll")).map(n => Path.join(path, n))
     const appPath = Path.join(__dirname, "..", "node_modules", "node-dotnet-bridge")
     const assemblies = [
-        Path.join(appPath, "ManagedLibrary.dll"), 
-        Path.join(appPath, "..", "..", "Standard.dll")]
+        Path.join(appPath, "NodeDotnet.dll")]
+        //Path.join(appPath, "..", "..", "Standard.dll")]
         .concat(coreAssemblies)
 
     //assemblies.forEach(n => console.log(n))
@@ -51,6 +51,8 @@ initialize({
     logCallback: log,
     resolveCoreclr: resolveCoreclr
 })
+
+test("Däs kömmt äüs dem ßchönen Äddon😁😁😁👏👏")
 
 unInitialize()
 console.log("Finished")
