@@ -1,7 +1,6 @@
 import * as fs from 'fs'
 import * as Path from 'path'
 import { initialize, unInitialize } from 'node-dotnet-bridge'
-import { stringify } from 'querystring';
 
 const log = function(text: string) { console.log(text) }
 
