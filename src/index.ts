@@ -35,6 +35,9 @@ const resolveCoreclr = function(basePath: string, dllName: string) {
 
     console.log(__dirname)
 
+    eval("global.testDate = new Date()")
+    console.log(testDate.getFullYear())
+
     return {
         path: path,
         appPath: appPath,

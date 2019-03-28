@@ -14,3 +14,5 @@ declare module 'node-dotnet-bridge' {
     function initialize(settings: Settings): void
     function unInitialize(): void
 }
+
+declare var testDate: Date
