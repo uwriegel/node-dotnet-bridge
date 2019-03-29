@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <string>
+#include <iostream>
 #include <locale>
 #include <codecvt>
 
@@ -17,6 +18,8 @@ auto clrBasePath = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\2.
 
 typedef wchar_t* (*executeSyncPtr)(const wchar_t* payload);
 executeSyncPtr executeSyncDelegate;
+typedef wchar_t* (*initializePtr)(const wchar_t* assemblyName);
+initializePtr initializeDelegate;
 
 
 string ws2utf8(const wstring &input) {
@@ -93,7 +96,21 @@ int main(int argc, char* argv[]) {
 	if (hr < 0)
 		return 9;
 
+	char buff[200];
+	cin.getline(buff, 20);
+	
+	// The assembly name passed in the third parameter is a managed assembly name
+	// as described at https://docs.microsoft.com/dotnet/framework/app-domains/assembly-names
+	hr = createManagedDelegate(
+		hostHandle,
+		domainId,
+		"NodeDotnet",
+		"NodeDotnet.Bridge",
+		"Initialize",
+		(void**)& initializeDelegate);
 
+	if (hr < 0)
+		return 9;
 	// The assembly name passed in the third parameter is a managed assembly name
 	// as described at https://docs.microsoft.com/dotnet/framework/app-domains/assembly-names
 	hr = createManagedDelegate(
@@ -107,7 +124,7 @@ int main(int argc, char* argv[]) {
 	if (hr < 0)
 		return 9;
 
-	auto ret = executeSyncDelegate(L"Das kömmt äüs däm ßchönen Äddon");
+	auto ret = initializeDelegate(L"TestModule");
 
 	CoTaskMemFree(ret);
 	if (shutdownCoreClr) 
