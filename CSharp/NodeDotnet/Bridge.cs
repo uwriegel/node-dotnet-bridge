@@ -13,6 +13,9 @@ namespace NodeDotnet
 {
     public class Bridge
     {
+        [DllImport("user32.dll")]
+        static extern int MessageBox(IntPtr hWnd, string text, string caption, int type);
+
         [return: MarshalAs(UnmanagedType.LPWStr)]
         public static string Initialize([MarshalAs(UnmanagedType.LPWStr)] string assemblyName)
         {
@@ -20,6 +23,8 @@ namespace NodeDotnet
             // TODO: return MethodInfos as json to calling javascript. Create javascript classes in C++
             // TODO: At the moment creater d.ts file manually
             // TODO: Constructor of C++-Proxy -> Invoke new Object in TestModule
+
+            //MessageBox(IntPtr.Zero, "Haha", "Huhu", 0);
 
             var assembly = Assembly.Load(assemblyName);
             var objects = 

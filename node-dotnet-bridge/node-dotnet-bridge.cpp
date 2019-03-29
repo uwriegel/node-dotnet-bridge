@@ -22,6 +22,8 @@ using namespace v8;
 // Function pointer types for the managed call and callback
 typedef int (*report_callback_ptr)(int progress);
 typedef char* (*doWork_ptr)(const char* jobName, int iterations, int dataSize, double* data, report_callback_ptr callbackFunction);
+typedef wchar_t* (*initializePtr)(const wchar_t* assemblyName);
+initializePtr initializeDelegate;
 typedef wchar_t* (*executeSyncPtr)(const wchar_t* payload);
 executeSyncPtr executeSyncDelegate;
 
@@ -36,6 +38,7 @@ wstring utf82ws(const string &input) {
 }
 
 v8::Persistent<Function> loggingCallbackPersist;
+v8::Persistent<Function> deserializeCallbackPersist;
 coreclr_shutdown_ptr shutdownCoreClr = nullptr;
 void* hostHandle;
 unsigned int domainId;
@@ -48,6 +51,12 @@ unsigned int domainId;
 void log(Isolate* isolate, v8::Local<String> str) {
     Handle<Value> argv[] = { str };
     Local<Function>::New(isolate, loggingCallbackPersist)->Call(isolate->GetCurrentContext()->Global(), 1, argv);
+}
+
+void deserialize(Isolate* isolate, const wchar_t* text) {
+    auto str = String::NewFromTwoByte(isolate, (uint16_t*)text);
+    Handle<Value> argv[] = { str };
+    auto res = Local<Function>::New(isolate, deserializeCallbackPersist)->Call(isolate->GetCurrentContext()->Global(), 1, argv);
 }
 
 int ReportProgressCallback(int progress) {
@@ -71,9 +80,13 @@ NAN_METHOD(Initialize) {
 
     auto settings = Handle<Object>::Cast(info[0]);
     auto loggingValue = settings->Get(New<String>("logCallback").ToLocalChecked());
+    auto deserializeValue = settings->Get(New<String>("deserialize").ToLocalChecked());
 
     auto callback = Local<Function>::Cast(loggingValue);
     loggingCallbackPersist.Reset(isolate, callback);
+
+    callback = Local<Function>::Cast(deserializeValue);
+    deserializeCallbackPersist.Reset(isolate, callback);
 
 #if WINDOWS
     auto clrBasePath = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\";
@@ -170,8 +183,8 @@ NAN_METHOD(Initialize) {
 		//"NodeDotnet, Version=1.0.0.0",
 		"NodeDotnet",
 		"NodeDotnet.Bridge",
-		"ExecuteSync",
-		(void**)& executeSyncDelegate);
+		"Initialize",
+		(void**)& initializeDelegate);
 
 	if (hr >= 0)
 		log(isolate, "Managed delegate created\n");
@@ -181,8 +194,9 @@ NAN_METHOD(Initialize) {
 		return;
 	}
 
-	auto ret = executeSyncDelegate(L"Das kömmt äüs däm ßchönen Äddon");
+	auto ret = initializeDelegate(L"TestModule");
 	log(isolate, ret);
+    deserialize(isolate, ret);
 
 #if WINDOWS
 	CoTaskMemFree(ret);

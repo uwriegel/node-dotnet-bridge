@@ -3,6 +3,9 @@ import * as Path from 'path'
 import { initialize, unInitialize, test } from 'node-dotnet-bridge'
 
 const log = function(text: string) { console.log(text) }
+const deserialize = function (json: string) { 
+    return JSON.parse(json) 
+}
 
 const resolveCoreclr = function(basePath: string, dllName: string) {
     const version = fs.readdirSync(basePath).sort((a, b) => - a.localeCompare(b))[0]
@@ -21,12 +24,15 @@ const resolveCoreclr = function(basePath: string, dllName: string) {
 	// belong on the TPA list. In a real host, only managed assemblies that the host
 	// expects to load should be included. Having extra unmanaged assemblies doesn't
 	// cause anything to fail, though, so this function just enumerates all dll's in
-	// order to keep this sample concise.
+    // order to keep this sample concise.
+    const sourcePath = Path.join(__dirname, "..")
+    const sourceAssemblies = fs.readdirSync(sourcePath).filter(n => n.endsWith(".dll")).map(n => Path.join(sourcePath, n))
     const coreAssemblies = fs.readdirSync(path).filter(n => n.endsWith(".dll")).map(n => Path.join(path, n))
     const appPath = Path.join(__dirname, "..", "node_modules", "node-dotnet-bridge")
     const assemblies = [
-        Path.join(appPath, "NodeDotnet.dll")]
-        //Path.join(appPath, "..", "..", "Standard.dll")]
+        Path.join(appPath, "NodeDotnet.dll"),
+        Path.join(appPath, "NodeDotnet.Core.dll")]
+        .concat(sourceAssemblies)
         .concat(coreAssemblies)
 
     //assemblies.forEach(n => console.log(n))
@@ -49,6 +55,7 @@ const resolveCoreclr = function(basePath: string, dllName: string) {
 // TODO: logCallback: kann auch null sein, dann kein Logging
 initialize({
     logCallback: log,
+    deserialize: deserialize,
     resolveCoreclr: resolveCoreclr
 })
 

@@ -8,6 +8,7 @@ declare module 'node-dotnet-bridge' {
     
     interface Settings {
         logCallback: ((text: string)=>void) | undefined
+        deserialize: (json: string)=>any
         resolveCoreclr: (coreBasePath: string, dllName: string)=>CorePathResult
     }
 
