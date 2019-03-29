@@ -220,7 +220,7 @@ NAN_METHOD(Test) {
 
     v8::String::Value s(info[0]);
 	auto ret = executeSyncDelegate((wchar_t*)*s);
-	log(isolate, ret);
+	//log(isolate, ret);
 #if WINDOWS
 	CoTaskMemFree(ret);
 #elif LINUX

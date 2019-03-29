@@ -9,3 +9,11 @@ build
 NodeDotnet/.vs/NodeDotnet/v15
 NodeDotnet/bin
 NodeDotnet/obj
+CSharp/NodeDotnet/.vs/
+CSharp/NodeDotnet/bin
+CSharp/NodeDotnet/obj
+CSharp/NodeDotnet.Core/bin/
+CSharp/NodeDotnet.Core/obj/
+CSharp/NodeDotnetTest/x64
+CSharp/TestModule/bin/
+CSharp/TestModule/obj/

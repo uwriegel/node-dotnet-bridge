@@ -52,7 +52,8 @@ initialize({
     resolveCoreclr: resolveCoreclr
 })
 
-test("Däs kömmt äüs dem ßchönen Äddon😁😁😁👏👏")
+for (let i = 0; i < 10000000; i++)
+    test("Däs kömmt äüs dem ßchönen Äddon😁😁😁👏👏")
 
 unInitialize()
 console.log("Finished")
