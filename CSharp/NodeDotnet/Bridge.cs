@@ -6,6 +6,8 @@ using System.Text;
 using System.Linq;
 using System.Threading;
 using NodeDotnet.Core;
+using System.Runtime.Serialization.Json;
+using System.IO;
 
 namespace NodeDotnet
 {
@@ -20,22 +22,20 @@ namespace NodeDotnet
             // TODO: Constructor of C++-Proxy -> Invoke new Object in TestModule
 
             var assembly = Assembly.Load(assemblyName);
-            var allTypes = assembly.GetExportedTypes();
-
-            var objects =
-                from n in allTypes
+            var objects = 
+                from n in assembly.GetExportedTypes()
                 where n.GetCustomAttribute(typeof(JavascriptObjectAttribute)) != null
-                select n;
-
-            var methods =
-                from n in
-                    from t in allTypes
-                    where t.GetCustomAttribute(typeof(JavascriptObjectAttribute)) != null
-                    select t
-                from m in n.GetMethods()
-                where m.GetCustomAttribute(typeof(JavascriptMethodAttribute)) != null
-                select new Method(n.Name, m.Name, m.GetParameters(), m.ReturnParameter);
-            return null;
+                select new JSClass(n.Name,
+                    from m in n.GetMethods()
+                    where m.GetCustomAttribute(typeof(JavascriptMethodAttribute)) != null
+                    select new Method(m.Name, m.GetParameters(), m.ReturnParameter));
+            var seri = new DataContractJsonSerializer(typeof(JSClass[]));
+            var ms = new MemoryStream();
+            seri.WriteObject(ms, objects.ToArray());
+            ms.Capacity = (int)ms.Length;
+            var buff = ms.GetBuffer();
+            var result = Encoding.UTF8.GetString(buff);
+            return result;
         }
 
         [return: MarshalAs(UnmanagedType.LPWStr)]

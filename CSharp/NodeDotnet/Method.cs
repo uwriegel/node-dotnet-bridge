@@ -2,23 +2,35 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace NodeDotnet
 {
-    class Method
+    [DataContract]
+    public class Method
     {
-        public string ContainingClass { get; }
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public Parameter[] Parameters { get; set; }
+        [DataMember]
+        public Parameter ReturnValue { get; set; }
 
-        public Method(string containingClass, string name, IEnumerable<ParameterInfo> parameters, ParameterInfo returnValue)
+        public ParameterInfo[] ParameterInfos { get; set; }
+        
+        public ParameterInfo ReturnInfo { get; set; }
+
+        public Method() { }
+
+        public Method(string name, IEnumerable<ParameterInfo> parameters, ParameterInfo returnValue)
         {
-            ContainingClass = containingClass;
-            this.name = name;
-            this.parameters = parameters;
-            this.returnValue = returnValue;
-        }
+            Name = name;
+            ParameterInfos = parameters.ToArray();
+            Parameters = ParameterInfos.Select(n => new Parameter(n)).ToArray();
 
-        string name;
-        IEnumerable<ParameterInfo> parameters;
-        ParameterInfo returnValue;
+            ReturnInfo = returnValue;
+            ReturnValue = new Parameter(ReturnInfo);
+        }
     }
 }
