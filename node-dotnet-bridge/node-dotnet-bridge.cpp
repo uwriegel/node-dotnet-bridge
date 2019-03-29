@@ -48,6 +48,8 @@ unsigned int domainId;
 	void* coreClr;
 #endif
 
+void log(Isolate* isolate, const char* text);
+
 void log(Isolate* isolate, v8::Local<String> str) {
     Handle<Value> argv[] = { str };
     Local<Function>::New(isolate, loggingCallbackPersist)->Call(isolate->GetCurrentContext()->Global(), 1, argv);
@@ -57,6 +59,18 @@ void deserialize(Isolate* isolate, const wchar_t* text) {
     auto str = String::NewFromTwoByte(isolate, (uint16_t*)text);
     Handle<Value> argv[] = { str };
     auto res = Local<Function>::New(isolate, deserializeCallbackPersist)->Call(isolate->GetCurrentContext()->Global(), 1, argv);
+    if (res->IsArray()) {
+        Local<Array> array = Local<Array>::Cast(res);
+
+        for (auto i = 0; i < array->Length(); i++ ) {
+            if (Nan::Has(array, i).FromJust()) {
+                Local<Object> objectInfo = Nan::Get(array, i).ToLocalChecked()->ToObject();
+                String::Utf8Value objectNameVal(objectInfo->Get(New<String>("name").ToLocalChecked()));
+                auto objectName = *objectNameVal;
+                log(isolate, objectName);
+            }                
+        }
+    }
 }
 
 int ReportProgressCallback(int progress) {

@@ -10,11 +10,11 @@ namespace NodeDotnet
     [DataContract]
     public class Method
     {
-        [DataMember]
+        [DataMember(Name = "name")]
         public string Name { get; set; }
-        [DataMember]
+        [DataMember(Name = "parameters")]
         public Parameter[] Parameters { get; set; }
-        [DataMember]
+        [DataMember(Name = "returnValue")]
         public Parameter ReturnValue { get; set; }
 
         public ParameterInfo[] ParameterInfos { get; set; }

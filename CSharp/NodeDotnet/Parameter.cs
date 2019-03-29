@@ -33,9 +33,9 @@ namespace NodeDotnet
             }
         }
 
-        [DataMember]
+        [DataMember(Name = "name")]
         public string Name;
-        [DataMember]
+        [DataMember(Name = "type")]
         public ParameterType Type;
     }
 }

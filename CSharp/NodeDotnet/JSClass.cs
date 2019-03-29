@@ -17,9 +17,9 @@ namespace NodeDotnet
             Methods = methods.ToArray();
         }
 
-        [DataMember]
+        [DataMember(Name="name")]
         public string Name { get; set; }
-        [DataMember]
+        [DataMember(Name = "methods")]
         public Method[] Methods { get; set; }
     }
 }
