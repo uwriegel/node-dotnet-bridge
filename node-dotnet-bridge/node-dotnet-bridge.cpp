@@ -24,7 +24,11 @@ typedef int (*report_callback_ptr)(int progress);
 typedef char* (*doWork_ptr)(const char* jobName, int iterations, int dataSize, double* data, report_callback_ptr callbackFunction);
 typedef wchar_t* (*initializePtr)(const wchar_t* assemblyName);
 initializePtr initializeDelegate;
-typedef wchar_t* (*executeSyncPtr)(const wchar_t* payload);
+typedef void (*constructObjectPtr)(int objectId, const wchar_t* objectName);
+constructObjectPtr constructObjectDelegate;
+typedef void (*deleteObjectPtr)(int objectId);
+deleteObjectPtr deleteObjectDelegate;
+typedef wchar_t* (*executeSyncPtr)(int objectId, const const wchar_t* methodName, wchar_t* payload);
 executeSyncPtr executeSyncDelegate;
 
 string ws2utf8(const wstring &input) {
@@ -198,13 +202,61 @@ NAN_METHOD(Initialize) {
 		"NodeDotnet",
 		"NodeDotnet.Bridge",
 		"Initialize",
-		(void**)& initializeDelegate);
+		(void**)&initializeDelegate);
 
 	if (hr >= 0)
-		log(isolate, "Managed delegate created\n");
+		log(isolate, "initializeDelegate created\n");
 	else
 	{
-		log(isolate, "coreclr_create_delegate failed"); // - status: 0x%08x\n", hr);
+		log(isolate, "initializeDelegate failed"); // - status: 0x%08x\n", hr);
+		return;
+	}
+
+	hr = createManagedDelegate(
+		hostHandle,
+		domainId,
+		"NodeDotnet",
+		"NodeDotnet.Bridge",
+		"ConstructObject",
+		(void**)&constructObjectDelegate);
+
+	if (hr >= 0)
+		log(isolate, "constructObjectDelegate created\n");
+	else
+	{
+		log(isolate, "constructObjectDelegate failed"); // - status: 0x%08x\n", hr);
+		return;
+	}
+
+	hr = createManagedDelegate(
+		hostHandle,
+		domainId,
+		"NodeDotnet",
+		"NodeDotnet.Bridge",
+		"DeleteObject",
+		(void**)&deleteObjectDelegate);
+
+	if (hr >= 0)
+		log(isolate, "deleteObjectDelegate created\n");
+	else
+	{
+		log(isolate, "deleteObjectDelegate failed"); // - status: 0x%08x\n", hr);
+		return;
+	}
+
+	hr = createManagedDelegate(
+		hostHandle,
+		domainId,
+		"NodeDotnet",
+		"NodeDotnet.Bridge",
+		"ExecuteSync",
+		(void**)&executeSyncDelegate);
+
+	if (hr >= 0)
+		log(isolate, "executeSyncDelegate created\n");
+	else
+	{
+		log(isolate, "executeSyncDelegate failed"); // - status: 0x%08x\n", hr);
 		return;
 	}
 
@@ -243,21 +295,6 @@ NAN_METHOD(UnInitialize) {
     loggingCallbackPersist.Reset();
 }
 
-NAN_METHOD(Test) {
-    auto isolate = info.GetIsolate();
-
-    v8::String::Value s(info[0]);
-	auto ret = executeSyncDelegate((wchar_t*)*s);
-	//log(isolate, ret);
-#if WINDOWS
-	CoTaskMemFree(ret);
-#elif LINUX
-	free(ret);
-#endif
-}
-
-
-
 int proxyIdFactory = 0;
 
 class ProxyObject: public Nan::ObjectWrap {
@@ -266,14 +303,22 @@ public:
 private:
     // Native JS Functions for accessing the custom object properties
     static NAN_METHOD(New); // constructor
-    // static NAN_METHOD(GetName); // method
+    static NAN_METHOD(ExecuteSync); // method
     // static NAN_GETTER(NameGet); // (specific) property getter
     // static NAN_SETTER(NameSet); // (specific) property setter
 
     // the native object properties
-    ProxyObject() : id(++proxyIdFactory) {}
-    
+    ProxyObject() : id(++proxyIdFactory) {
+        name = L"Processor";
+        constructObjectDelegate(id, name.c_str());
+    }
+
+    ~ProxyObject() {
+        deleteObjectDelegate(id);
+    }
+public:    
     int id;
+    wstring name;
 };
 
 NAN_METHOD(ProxyObject::New) {
@@ -288,9 +333,6 @@ NAN_METHOD(ProxyObject::New) {
         return;
     }
     
-    auto isolate = info.GetIsolate();
-    log(isolate, "Binim Konstruktor");
-
     //auto name = Nan::To<v8::String>(info[0]).ToLocalChecked();
     //auto proxy = new ProxyObject(*Nan::Utf8String(name));
     auto proxy = new ProxyObject();
@@ -299,12 +341,21 @@ NAN_METHOD(ProxyObject::New) {
     proxy->Wrap(info.This()); // `Wrap` bind C++ object to JS object 
 }
 
-// NAN_METHOD(NanPerson::GetName) {
-//   // `Unwrap` refer C++ object from JS Object
-//   auto person = Nan::ObjectWrap::Unwrap<NanPerson>(info.Holder());
-//   auto name = Nan::New(person->name).ToLocalChecked();
-//   info.GetReturnValue().Set(name);
-// }
+NAN_METHOD(ProxyObject::ExecuteSync) {
+    // `Unwrap` refer C++ object from JS Object
+    auto proxy = Nan::ObjectWrap::Unwrap<ProxyObject>(info.Holder());
+
+    auto isolate = info.GetIsolate();
+    v8::String::Value s(info[0]);
+ 	auto ret = executeSyncDelegate(proxy->id, proxy->name.c_str(), (wchar_t*)*s);
+    auto str = String::NewFromTwoByte(isolate, (uint16_t*)ret);
+     info.GetReturnValue().Set(str);
+#if WINDOWS
+	CoTaskMemFree(ret);
+#elif LINUX
+	free(ret);
+#endif
+ }
 
 // NAN_GETTER(NanPerson::NameGet) {
 //   auto person = Nan::ObjectWrap::Unwrap<NanPerson>(info.Holder());
@@ -328,7 +379,7 @@ NAN_MODULE_INIT(ProxyObject::Init) {
     ctorInst->SetInternalFieldCount(1); // for ObjectWrap, it should set 1
 
     // add member functions and accessors
-    // Nan::SetPrototypeMethod(ctor, "getName", GetName);
+    Nan::SetPrototypeMethod(ctor, "executeSync", ExecuteSync);
     // auto pname = Nan::New("name").ToLocalChecked();
     // Nan::SetAccessor(ctorInst, pname, NameGet, NameSet);
   
@@ -339,8 +390,6 @@ NAN_MODULE_INIT(init) {
     Nan::Set(target, New<String>("initialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(Initialize)).ToLocalChecked());
     Nan::Set(target, New<String>("unInitialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(UnInitialize)).ToLocalChecked());
     ProxyObject::Init(target);
-
-    Nan::Set(target, New<String>("test").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(Test)).ToLocalChecked());
 }
 
 NODE_MODULE(node_dotnet, init)

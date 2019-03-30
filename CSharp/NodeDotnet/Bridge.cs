@@ -43,8 +43,18 @@ namespace NodeDotnet
             return result;
         }
 
+        public static void ConstructObject(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string name)
+        {
+
+        }
+
+        public static void DeleteObject(int objectId)
+        {
+
+        }
+
         [return: MarshalAs(UnmanagedType.LPWStr)]
-        public static string ExecuteSync([MarshalAs(UnmanagedType.LPWStr)] string input)
+        public static string ExecuteSync(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string method, [MarshalAs(UnmanagedType.LPWStr)] string input)
             =>"Retörning from Mänaged Cöde: " + input;
     }
 }

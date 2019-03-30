@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as Path from 'path'
-import { initialize, unInitialize, test, ProxyObject } from 'node-dotnet-bridge'
+import { initialize, unInitialize, ProxyObject } from 'node-dotnet-bridge'
 
 const log = function(text: string) { console.log(text) }
 const deserialize = function (json: string) { 
@@ -52,6 +52,8 @@ const resolveCoreclr = function(basePath: string, dllName: string) {
     }
 }
 
+
+
 // TODO: logCallback: kann auch null sein, dann kein Logging
 initialize({
     logCallback: log,
@@ -59,10 +61,52 @@ initialize({
     resolveCoreclr: resolveCoreclr
 })
 
-const proxy = new ProxyObject()
+function multiObjects() {
+    const proxy1 = new ProxyObject()    
+    const proxy2 = new ProxyObject()
+    const ret1 = proxy1.executeSync("👏👏")
+    const ret2 = proxy2.executeSync("Das kömmt äüß Typescript😁")
+}
 
-// for (let i = 0; i < 10000000; i++)
-//     test("Däs kömmt äüs dem ßchönen Äddon😁😁😁👏👏")
+
+
+
+
+
+const proxy = new ProxyObject()
+multiObjects()
+const ret = proxy.executeSync("Das kömmt äüß Typescript😁😁😁👏👏")
+
+
+var affe = eval(`
+(class myModule {
+    hello() {
+      return 'hello!';
+    }
+  
+    goodbye() {
+        return proxy.executeSync("Das kömmt äüß Typescript😁😁😁👏👏")
+   }
+})
+  
+//   module.exports = myModule;
+//   return myModule
+`)
+declare class myModule{
+    hello(): ()=>string
+    goodbye(): ()=>string
+    }
+//var myModule = require('myModule');
+
+var myModuleInstance = new affe() //myModule();
+console.log(myModuleInstance.hello())
+console.log(myModuleInstance.goodbye())
+
+
+for (let i = 0; i < 1000000; i++)
+    proxy.executeSync(JSON.stringify({
+        name: "Das kömmt äüß Typescript😁😁😁👏👏"
+    }))
 
 unInitialize()
 console.log("Finished")

@@ -14,10 +14,9 @@ declare module 'node-dotnet-bridge' {
 
     function initialize(settings: Settings): void
     function unInitialize(): void
-    function test(text: string): void
-
+    
     class ProxyObject {
-
+        executeSync(payload: string): string
     }
 }
 
