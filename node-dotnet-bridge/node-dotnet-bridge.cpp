@@ -256,9 +256,89 @@ NAN_METHOD(Test) {
 #endif
 }
 
+
+
+int proxyIdFactory = 0;
+
+class ProxyObject: public Nan::ObjectWrap {
+public:
+    static NAN_MODULE_INIT(Init);
+private:
+    // Native JS Functions for accessing the custom object properties
+    static NAN_METHOD(New); // constructor
+    // static NAN_METHOD(GetName); // method
+    // static NAN_GETTER(NameGet); // (specific) property getter
+    // static NAN_SETTER(NameSet); // (specific) property setter
+
+    // the native object properties
+    ProxyObject() : id(++proxyIdFactory) {}
+    
+    int id;
+};
+
+NAN_METHOD(ProxyObject::New) {
+    if (!info.IsConstructCall()) {
+        // [NOTE] generic recursive call with `new`
+        std::vector<v8::Local<v8::Value>> args(info.Length());
+        for (std::size_t i = 0; i < args.size(); ++i) 
+            args[i] = info[i];
+        // auto inst = Nan::NewInstance(info.Callee(), args.size(), args.data());
+        // if (!inst.IsEmpty()) 
+        //     info.GetReturnValue().Set(inst.ToLocalChecked());
+        return;
+    }
+    
+    auto isolate = info.GetIsolate();
+    log(isolate, "Binim Konstruktor");
+
+    //auto name = Nan::To<v8::String>(info[0]).ToLocalChecked();
+    //auto proxy = new ProxyObject(*Nan::Utf8String(name));
+    auto proxy = new ProxyObject();
+
+    // [NOTE] break vm if run the under code in no-`new` function call 
+    proxy->Wrap(info.This()); // `Wrap` bind C++ object to JS object 
+}
+
+// NAN_METHOD(NanPerson::GetName) {
+//   // `Unwrap` refer C++ object from JS Object
+//   auto person = Nan::ObjectWrap::Unwrap<NanPerson>(info.Holder());
+//   auto name = Nan::New(person->name).ToLocalChecked();
+//   info.GetReturnValue().Set(name);
+// }
+
+// NAN_GETTER(NanPerson::NameGet) {
+//   auto person = Nan::ObjectWrap::Unwrap<NanPerson>(info.Holder());
+//   auto name = Nan::New(person->name).ToLocalChecked();
+//   info.GetReturnValue().Set(name);
+// }
+
+// NAN_SETTER(NanPerson::NameSet) {
+//   auto person = Nan::ObjectWrap::Unwrap<NanPerson>(info.Holder());
+//   // [NOTE] `value` is defined argument in `NAN_SETTER`
+//   auto name = Nan::To<v8::String>(value).ToLocalChecked();
+//   person->name = *Nan::Utf8String(name);
+// }
+
+
+NAN_MODULE_INIT(ProxyObject::Init) {
+    auto cname = Nan::New("ProxyObject").ToLocalChecked();
+    auto ctor = Nan::New<v8::FunctionTemplate>(New);
+    auto ctorInst = ctor->InstanceTemplate(); // target for member functions
+    ctor->SetClassName(cname); // as `ctor.name` in JS
+    ctorInst->SetInternalFieldCount(1); // for ObjectWrap, it should set 1
+
+    // add member functions and accessors
+    // Nan::SetPrototypeMethod(ctor, "getName", GetName);
+    // auto pname = Nan::New("name").ToLocalChecked();
+    // Nan::SetAccessor(ctorInst, pname, NameGet, NameSet);
+  
+    Nan::Set(target, cname, Nan::GetFunction(ctor).ToLocalChecked());
+}
+
 NAN_MODULE_INIT(init) {
     Nan::Set(target, New<String>("initialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(Initialize)).ToLocalChecked());
     Nan::Set(target, New<String>("unInitialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(UnInitialize)).ToLocalChecked());
+    ProxyObject::Init(target);
 
     Nan::Set(target, New<String>("test").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(Test)).ToLocalChecked());
 }

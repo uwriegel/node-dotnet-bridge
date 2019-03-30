@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as Path from 'path'
-import { initialize, unInitialize, test } from 'node-dotnet-bridge'
+import { initialize, unInitialize, test, ProxyObject } from 'node-dotnet-bridge'
 
 const log = function(text: string) { console.log(text) }
 const deserialize = function (json: string) { 
@@ -59,8 +59,12 @@ initialize({
     resolveCoreclr: resolveCoreclr
 })
 
-for (let i = 0; i < 10000000; i++)
-    test("Däs kömmt äüs dem ßchönen Äddon😁😁😁👏👏")
+const proxy = new ProxyObject()
+
+// for (let i = 0; i < 10000000; i++)
+//     test("Däs kömmt äüs dem ßchönen Äddon😁😁😁👏👏")
 
 unInitialize()
 console.log("Finished")
+
+

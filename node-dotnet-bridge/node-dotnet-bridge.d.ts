@@ -15,6 +15,10 @@ declare module 'node-dotnet-bridge' {
     function initialize(settings: Settings): void
     function unInitialize(): void
     function test(text: string): void
+
+    class ProxyObject {
+
+    }
 }
 
 declare var testDate: Date
