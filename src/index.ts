@@ -17,9 +17,9 @@ const deserialize = function (json: string) {
     const getParameters = function(parameters: any[]) {
         return parameters.map(n => `${n.name}`).join(`, `)
     }
-
     const getMethods = function(methods: any[]) {
         return methods.map(n => `${n.name}(${getParameters(n.parameters)}) {
+        this.addon.execute(this.id, "${n.name}", ${getParameters(n.parameters)})
         return 8            
     }`).join(`
     `)
@@ -28,8 +28,8 @@ const deserialize = function (json: string) {
     const objectScripts = objects.map(n => 
 `(class ${n.name} {
     constructor() {
-        let addon = require('node-dotnet-bridge')
-        this.proxy = new addon.ProxyObject()
+        this.addon = require('node-dotnet-bridge')
+        this.proxy = new this.addon.ProxyObject()
         this.id = this.proxy.id
         console.log("In Constructor:" + this.id)
     }

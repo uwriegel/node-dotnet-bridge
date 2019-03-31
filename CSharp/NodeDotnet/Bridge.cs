@@ -56,5 +56,11 @@ namespace NodeDotnet
         [return: MarshalAs(UnmanagedType.LPWStr)]
         public static string ExecuteSync(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string method, [MarshalAs(UnmanagedType.LPWStr)] string input)
             =>"Retörning from Mänaged Cöde: " + input;
+
+        public static void Execute(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string method,
+            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)][In] byte[] payload, int size)
+        {
+
+        }
     }
 }

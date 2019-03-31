@@ -30,6 +30,8 @@ typedef void (*deleteObjectPtr)(int objectId);
 deleteObjectPtr deleteObjectDelegate;
 typedef wchar_t* (*executeSyncPtr)(int objectId, const const wchar_t* methodName, wchar_t* payload);
 executeSyncPtr executeSyncDelegate;
+typedef void (*executePtr)(int objectId, const const wchar_t* methodName, char* payload, int length);
+executePtr executeDelegate;
 
 string ws2utf8(const wstring &input) {
 	wstring_convert<codecvt_utf8<wchar_t>> utf8conv;
@@ -212,6 +214,22 @@ NAN_METHOD(Initialize) {
 		return;
 	}
 
+    hr = createManagedDelegate(
+		hostHandle,
+		domainId,
+		"NodeDotnet",
+		"NodeDotnet.Bridge",
+		"Execute",
+		(void**)&executeDelegate);
+
+	if (hr >= 0)
+		log(isolate, "executeDelegate created\n");
+	else
+	{
+		log(isolate, "executeDelegate failed"); // - status: 0x%08x\n", hr);
+		return;
+	}
+
 	hr = createManagedDelegate(
 		hostHandle,
 		domainId,
@@ -293,6 +311,15 @@ NAN_METHOD(UnInitialize) {
 #endif
 
     loggingCallbackPersist.Reset();
+}
+
+NAN_METHOD(Execute) {
+    auto isolate = info.GetIsolate();
+    Nan::Maybe<double> value = Nan::To<double>(info[0]); 
+    double id = value.FromJust();
+    v8::String::Value methodName(info[1]);
+
+ 	executeDelegate(id, (wchar_t*)*methodName, "Hallo9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999", info.Length());
 }
 
 int proxyIdFactory = 0;
@@ -389,6 +416,7 @@ NAN_MODULE_INIT(ProxyObject::Init) {
 NAN_MODULE_INIT(init) {
     Nan::Set(target, New<String>("initialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(Initialize)).ToLocalChecked());
     Nan::Set(target, New<String>("unInitialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(UnInitialize)).ToLocalChecked());
+    Nan::Set(target, New<String>("execute").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(Execute)).ToLocalChecked());
     ProxyObject::Init(target);
 }
 
