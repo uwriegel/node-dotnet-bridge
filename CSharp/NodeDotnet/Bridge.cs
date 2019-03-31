@@ -25,8 +25,8 @@ namespace NodeDotnet
             // TODO: Constructor of C++-Proxy -> Invoke new Object in TestModule
 
             //MessageBox(IntPtr.Zero, "Haha", "Huhu", 0);
-
-            var assembly = Assembly.Load(assemblyName);
+            assembly = Assembly.Load(assemblyName);
+            objectNames = assembly.GetExportedTypes().Select(n => (n.Name, n.FullName)).ToDictionary(m => m.Name, m => m.FullName);
             var objects = 
                 from n in assembly.GetExportedTypes()
                 where n.GetCustomAttribute(typeof(JavascriptObjectAttribute)) != null
@@ -45,13 +45,14 @@ namespace NodeDotnet
 
         public static void ConstructObject(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string name)
         {
-
+            var fullname = objectNames[name];
+            var t = assembly.GetType(fullname);
+            var o = Activator.CreateInstance(t);
+            objects[objectId] = o;
         }
 
         public static void DeleteObject(int objectId)
-        {
-
-        }
+            => objects.Remove(objectId);
 
         [return: MarshalAs(UnmanagedType.LPWStr)]
         public static string ExecuteSync(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string method, [MarshalAs(UnmanagedType.LPWStr)] string input)
@@ -62,5 +63,9 @@ namespace NodeDotnet
         {
 
         }
+
+        static Dictionary<string, string> objectNames = new Dictionary<string, string>();
+        static Dictionary<int, object> objects = new Dictionary<int, object>();
+        static Assembly assembly;
     }
 }
