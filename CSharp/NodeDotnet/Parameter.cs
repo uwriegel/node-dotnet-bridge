@@ -13,26 +13,30 @@ namespace NodeDotnet
         public Parameter(ParameterInfo info)
         {
             Name = info.Name;
-            var t = info.ParameterType.ToString();
+            var t = info.ParameterType.Name;
             switch (t)
             {
-                case "System.String":
+                case "String":
                     Type = ParameterType.String;
                     InternalType = InternalParameterType.String;
                     break;
-                case "System.Int32":
-                case "System.UInt32":
+                case "Int32":
+                case "UInt32":
                     InternalType = InternalParameterType.Int;
                     Type = ParameterType.Number;
                     break;
-                case "System.Int64":
-                case "System.Float":
-                case "System.Double":
-                case "System.UInt64":
+                case "Int64":
+                case "Float":
+                case "Double":
+                case "UInt64":
                     Type = ParameterType.Number;
                     InternalType = InternalParameterType.Double;
                     break;
-                case "System.DateTime":
+                case "DateTime":
+                    Type = ParameterType.Date;
+                    InternalType = InternalParameterType.Date;
+                    break;
+                case "Task`1":
                     Type = ParameterType.Date;
                     InternalType = InternalParameterType.Date;
                     break;

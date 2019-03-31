@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace TestModule
 {
@@ -13,6 +14,13 @@ namespace TestModule
             => $"Returned from CSharp: {text}, {number}, {dateTime}";
         [JavascriptMethod]
         public int Add(int a, int b) => a + b;
+
+        [JavascriptMethod]
+        public async Task<int> AddAsync(int a, int b)
+        {
+            await Task.Delay(1000);
+            return a + b;
+        }
 
         public int Noop() => 9;
     }

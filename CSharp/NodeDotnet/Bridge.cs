@@ -8,6 +8,7 @@ using System.Threading;
 using NodeDotnet.Core;
 using System.Runtime.Serialization.Json;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace NodeDotnet
 {
@@ -72,6 +73,39 @@ namespace NodeDotnet
         public static string Execute(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string method,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)][In] byte[] payload, int size)
         {
+            var result = InternalExecute(objectId, method, payload);
+            switch (result)
+            {
+                case string s:
+                    return s;
+                case int i:
+                    return i.ToString();
+                default:
+                    return "";
+            }
+        }
+
+        public static async void ExecuteAsync(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string method,
+            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)][In] byte[] payload, int size)
+        {
+            var taskResult = await (Task<object>)InternalExecute(objectId, method, payload);
+            string result;
+            switch (taskResult)
+            {
+                case string s:
+                    result = s;
+                    break;
+                case int i:
+                    result = i.ToString();
+                    break;
+                default:
+                    result = "";
+                    break;
+            }
+        }
+
+        static object InternalExecute(int objectId, string method, byte[] payload)
+        {
             var info = objects[objectId];
             var methodInfo = info.Info.Methods[method];
             var position = 0;
@@ -95,16 +129,7 @@ namespace NodeDotnet
             }
 
             var parameters = methodInfo.Parameters.Select(n => GetParameter(n)).ToArray();
-            var result = methodInfo.Info.Invoke(info.Object, parameters);
-            switch (result)
-            {
-                case string s:
-                    return s;
-                case int i:
-                    return i.ToString();
-                default:
-                    return "";
-            }
+            return methodInfo.Info.Invoke(info.Object, parameters);
         }
 
         static int ReadInt(byte[] payload, ref int position)
