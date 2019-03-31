@@ -319,7 +319,31 @@ NAN_METHOD(Execute) {
     double id = value.FromJust();
     v8::String::Value methodName(info[1]);
 
- 	executeDelegate(id, (wchar_t*)*methodName, "Hallo9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999", info.Length());
+    int position = 0;
+    char* buffer = (char*)malloc(1000);
+    for (auto i = 2; i < info.Length(); i++) {
+        if (info[i]->IsString()) {
+            v8::String::Value strval(info[i]);
+            auto str = (wchar_t*)*strval;
+            int len = wcslen(str);
+            memcpy(buffer + position, &len, 4);
+            position+=4;
+            memcpy(buffer + position, str, 2*len);
+            position += 2*len;
+        }
+        else if (info[i]->IsInt32() ||info[i]->IsUint32()) {
+            Nan::Maybe<uint32_t> value = Nan::To<uint32_t>(info[i]); 
+            uint32_t val = value.FromJust();   
+            int len = 4;
+            memcpy(buffer + position, &len, 4);         
+            position+=4;
+            memcpy(buffer + position, &val, 4);
+            position+=4;
+        }
+    }
+
+    executeDelegate(id, (wchar_t*)*methodName, buffer, position);
+    free(buffer);
 }
 
 int proxyIdFactory = 0;
