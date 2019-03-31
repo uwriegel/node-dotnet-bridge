@@ -17,19 +17,19 @@ namespace NodeDotnet
         [DataMember(Name = "returnValue")]
         public Parameter ReturnValue { get; set; }
 
-        public ParameterInfo[] ParameterInfos { get; set; }
+        public MethodInfo Info { get; }
         
         public ParameterInfo ReturnInfo { get; set; }
 
         public Method() { }
 
-        public Method(string name, IEnumerable<ParameterInfo> parameters, ParameterInfo returnValue)
+        public Method(MethodInfo methodInfo)
         {
-            Name = name;
-            ParameterInfos = parameters.ToArray();
-            Parameters = ParameterInfos.Select(n => new Parameter(n)).ToArray();
+            Name = methodInfo.Name;
+            Info = methodInfo;
+            Parameters = methodInfo.GetParameters().Select(n => new Parameter(n)).ToArray();
 
-            ReturnInfo = returnValue;
+            ReturnInfo = methodInfo.ReturnParameter;
             ReturnValue = new Parameter(ReturnInfo);
         }
     }

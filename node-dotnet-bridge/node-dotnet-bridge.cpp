@@ -325,10 +325,10 @@ NAN_METHOD(Execute) {
         if (info[i]->IsString()) {
             v8::String::Value strval(info[i]);
             auto str = (wchar_t*)*strval;
-            int len = wcslen(str);
+            int len = wcslen(str) * 2;
             memcpy(buffer + position, &len, 4);
             position+=4;
-            memcpy(buffer + position, str, 2*len);
+            memcpy(buffer + position, str, len);
             position += 2*len;
         }
         else if (info[i]->IsInt32() ||info[i]->IsUint32()) {
