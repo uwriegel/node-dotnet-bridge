@@ -2,8 +2,41 @@ import * as fs from 'fs'
 import * as Path from 'path'
 import { initialize, unInitialize, ProxyObject } from 'node-dotnet-bridge'
 
+declare class ProcessorType {
+    GetTest(text: string, number: Number, datetime: Date): string
+    Add(a: number, b: number): number
+}
+
+let Processor: any
+
 const log = function(text: string) { console.log(text) }
 const deserialize = function (json: string) { 
+    
+    const objects: any[] = JSON.parse(json) 
+
+    const getParameters = function(parameters: any[]) {
+        return parameters.map(n => `${n.name}`).join(`, `)
+    }
+
+    const getMethods = function(methods: any[]) {
+        return methods.map(n => `${n.name}(${getParameters(n.parameters)}) {
+        return 8            
+    }`).join(`
+    `)
+    }
+
+    const objectScripts = objects.map(n => 
+        `(class ${n.name} {
+    ${getMethods(n.methods)}
+})`).join(`
+
+`)
+    Processor = eval(objectScripts)    
+
+    console.log(objectScripts)
+
+    
+    
     return JSON.parse(json) 
 }
 
@@ -68,40 +101,13 @@ function multiObjects() {
     const ret2 = proxy2.executeSync("Das kömmt äüß Typescript😁")
 }
 
-
-
-
-
-
 const proxy = new ProxyObject()
 multiObjects()
 const ret = proxy.executeSync("Das kömmt äüß Typescript😁😁😁👏👏")
 
-
-var affe = eval(`
-(class myModule {
-    hello() {
-      return 'hello!';
-    }
-  
-    goodbye() {
-        return proxy.executeSync("Das kömmt äüß Typescript😁😁😁👏👏")
-   }
-})
-  
-//   module.exports = myModule;
-//   return myModule
-`)
-declare class myModule{
-    hello(): ()=>string
-    goodbye(): ()=>string
-    }
-//var myModule = require('myModule');
-
-var myModuleInstance = new affe() //myModule();
-console.log(myModuleInstance.hello())
-console.log(myModuleInstance.goodbye())
-
+const processor: ProcessorType = new Processor() 
+console.log(processor.GetTest("text", 23, new Date()))
+console.log(processor.Add(1, 2))
 
 for (let i = 0; i < 1000000; i++)
     proxy.executeSync(JSON.stringify({
