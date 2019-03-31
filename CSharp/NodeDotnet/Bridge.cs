@@ -19,31 +19,38 @@ namespace NodeDotnet
         [return: MarshalAs(UnmanagedType.LPWStr)]
         public static string Initialize([MarshalAs(UnmanagedType.LPWStr)] string assemblyName)
         {
-            // TODO: in managedBridge, read all assemblies in root (TestModule) and add those to tpaList
-            // TODO: return MethodInfos as json to calling javascript. Create javascript classes in C++
-            // TODO: At the moment creater d.ts file manually
-            // TODO: Constructor of C++-Proxy -> Invoke new Object in TestModule
+            try
+            {
+                // TODO: in managedBridge, read all assemblies in root (TestModule) and add those to tpaList
+                // TODO: return MethodInfos as json to calling javascript. Create javascript classes in C++
+                // TODO: At the moment create d.ts file manually
+                // TODO: Constructor of C++-Proxy -> Invoke new Object in TestModule
 
-            //MessageBox(IntPtr.Zero, "Haha", "Huhu", 0);
-            assembly = Assembly.Load(assemblyName);
-            var objectTypes = from n in assembly.GetExportedTypes()
-                                where n.GetCustomAttribute(typeof(JavascriptObjectAttribute)) != null
-                                select n;
+                //MessageBox(IntPtr.Zero, "Haha", "Huhu", 0);
+                assembly = Assembly.Load(assemblyName);
+                var objectTypes = from n in assembly.GetExportedTypes()
+                                  where n.GetCustomAttribute(typeof(JavascriptObjectAttribute)) != null
+                                  select n;
 
-            objectNames = objectTypes.ToDictionary(m => m.Name, m => new ObjectInfo(m));
-            var objects = 
-                from n in objectTypes
-                select new JSClass(n.Name,
-                    from m in n.GetMethods()
-                    where m.GetCustomAttribute(typeof(JavascriptMethodAttribute)) != null
-                    select new Method(m));
-            var seri = new DataContractJsonSerializer(typeof(JSClass[]));
-            var ms = new MemoryStream();
-            seri.WriteObject(ms, objects.ToArray());
-            ms.Capacity = (int)ms.Length;
-            var buff = ms.GetBuffer();
-            var result = Encoding.UTF8.GetString(buff);
-            return result;
+                objectNames = objectTypes.ToDictionary(m => m.Name, m => new ObjectInfo(m));
+                var objects =
+                    from n in objectTypes
+                    select new JSClass(n.Name,
+                        from m in n.GetMethods()
+                        where m.GetCustomAttribute(typeof(JavascriptMethodAttribute)) != null
+                        select new Method(m));
+                var seri = new DataContractJsonSerializer(typeof(JSClass[]));
+                var ms = new MemoryStream();
+                seri.WriteObject(ms, objects.ToArray());
+                ms.Capacity = (int)ms.Length;
+                var buff = ms.GetBuffer();
+                var result = Encoding.UTF8.GetString(buff);
+                return result;
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
         }
 
         public static void ConstructObject(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string name)
