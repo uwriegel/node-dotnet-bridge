@@ -28,7 +28,7 @@ const deserialize = function (json: string) {
 `(class ${n.name} {
     constructor() {
         this.addon = require('node-dotnet-bridge')
-        this.proxy = new this.addon.ProxyObject()
+        this.proxy = new this.addon.ProxyObject("${n.name}")
         this.id = this.proxy.id
         console.log("In Constructor:" + this.id)
     }
@@ -98,20 +98,22 @@ const resolveCoreclr = function(basePath: string, dllName: string) {
 
 
 // TODO: logCallback: kann auch null sein, dann kein Logging
-initialize({
+let res = initialize({
+    module: "TestModule",
     logCallback: log,
     deserialize: deserialize,
     resolveCoreclr: resolveCoreclr
 })
 
 function multiObjects() {
-    const proxy1 = new ProxyObject()    
-    const proxy2 = new ProxyObject()
+    const proxy1 = new ProxyObject("Processor")    
+    const proxy2 = new ProxyObject("Processor")
     const ret1 = proxy1.executeSync("👏👏")
     const ret2 = proxy2.executeSync("Das kömmt äüß Typescript😁")
 }
 
-const proxy = new ProxyObject()
+const proxy = new ProxyObject("Processor")
+
 multiObjects()
 const ret = proxy.executeSync("Das kömmt äüß Typescript😁😁😁👏👏")
 
@@ -120,11 +122,14 @@ console.log(processor.GetTest("text", 23, new Date()))
 console.log(processor.Add(1, 2))
 const processor2: ProcessorType = new Processor() 
 
+
+let date = new Date()
+let result = processor.GetTest("text", 23, date)
+
 for (let i = 0; i < 1000000; i++)
     proxy.executeSync(JSON.stringify({
         name: "Das kömmt äüß Typescript😁😁😁👏👏"
     }))
-let date = new Date()
 for (let i = 0; i < 1000000; i++)
     processor.Add(1,2)
     //processor.GetTest("text", 23, date)
