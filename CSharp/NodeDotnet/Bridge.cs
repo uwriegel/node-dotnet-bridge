@@ -61,7 +61,8 @@ namespace NodeDotnet
         public static string ExecuteSync(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string method, [MarshalAs(UnmanagedType.LPWStr)] string input)
             =>"Retörning from Mänaged Cöde: " + input;
 
-        public static void Execute(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string method,
+        [return: MarshalAs(UnmanagedType.LPWStr)]
+        public static string Execute(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string method,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)][In] byte[] payload, int size)
         {
             var info = objects[objectId];
@@ -88,6 +89,15 @@ namespace NodeDotnet
 
             var parameters = methodInfo.Parameters.Select(n => GetParameter(n)).ToArray();
             var result = methodInfo.Info.Invoke(info.Object, parameters);
+            switch (result)
+            {
+                case string s:
+                    return s;
+                case int i:
+                    return i.ToString();
+                default:
+                    return "";
+            }
         }
 
         static int ReadInt(byte[] payload, ref int position)

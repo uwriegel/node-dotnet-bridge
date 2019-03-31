@@ -30,7 +30,7 @@ typedef void (*deleteObjectPtr)(int objectId);
 deleteObjectPtr deleteObjectDelegate;
 typedef wchar_t* (*executeSyncPtr)(int objectId, const const wchar_t* methodName, wchar_t* payload);
 executeSyncPtr executeSyncDelegate;
-typedef void (*executePtr)(int objectId, const const wchar_t* methodName, char* payload, int length);
+typedef wchar_t* (*executePtr)(int objectId, const const wchar_t* methodName, char* payload, int length);
 executePtr executeDelegate;
 
 string ws2utf8(const wstring &input) {
@@ -342,8 +342,15 @@ NAN_METHOD(Execute) {
         }
     }
 
-    executeDelegate(id, (wchar_t*)*methodName, buffer, position);
+    auto ret = executeDelegate(id, (wchar_t*)*methodName, buffer, position);
+    auto str = String::NewFromTwoByte(isolate, (uint16_t*)ret);
+    info.GetReturnValue().Set(str);
     free(buffer);
+#if WINDOWS
+	CoTaskMemFree(ret);
+#elif LINUX
+	free(ret);
+#endif
 }
 
 int proxyIdFactory = 0;

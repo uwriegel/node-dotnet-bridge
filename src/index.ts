@@ -19,8 +19,7 @@ const deserialize = function (json: string) {
     }
     const getMethods = function(methods: any[]) {
         return methods.map(n => `${n.name}(${getParameters(n.parameters)}) {
-        this.addon.execute(this.id, "${n.name}", ${getParameters(n.parameters)})
-        return 8            
+        return this.addon.execute(this.id, "${n.name}", ${getParameters(n.parameters)})
     }`).join(`
     `)
     }
@@ -125,6 +124,10 @@ for (let i = 0; i < 1000000; i++)
     proxy.executeSync(JSON.stringify({
         name: "Das kömmt äüß Typescript😁😁😁👏👏"
     }))
+let date = new Date()
+for (let i = 0; i < 1000000; i++)
+    processor.Add(1,2)
+    //processor.GetTest("text", 23, date)
 
 unInitialize()
 console.log("Finished")
