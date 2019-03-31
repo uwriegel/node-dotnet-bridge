@@ -28,9 +28,9 @@ typedef void (*constructObjectPtr)(int objectId, const wchar_t* objectName);
 constructObjectPtr constructObjectDelegate;
 typedef void (*deleteObjectPtr)(int objectId);
 deleteObjectPtr deleteObjectDelegate;
-typedef wchar_t* (*executeSyncPtr)(int objectId, const const wchar_t* methodName, wchar_t* payload);
+typedef wchar_t* (*executeSyncPtr)(int objectId, const wchar_t* methodName, wchar_t* payload);
 executeSyncPtr executeSyncDelegate;
-typedef wchar_t* (*executePtr)(int objectId, const const wchar_t* methodName, char* payload, int length);
+typedef wchar_t* (*executePtr)(int objectId, const wchar_t* methodName, char* payload, int length);
 executePtr executeDelegate;
 
 string ws2utf8(const wstring &input) {
@@ -107,7 +107,7 @@ NAN_METHOD(Initialize) {
 
     callback = Local<Function>::Cast(deserializeValue);
     deserializeCallbackPersist.Reset(isolate, callback);
-
+printf("Super");
 #if WINDOWS
     auto clrBasePath = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\";
     auto dllName = "coreclr.dll";
@@ -278,6 +278,7 @@ NAN_METHOD(Initialize) {
 		return;
 	}
 
+    printf("Super");
 	auto ret = initializeDelegate(L"TestModule");
 	log(isolate, ret);
     deserialize(isolate, ret);
