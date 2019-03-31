@@ -26,15 +26,26 @@ const deserialize = function (json: string) {
     }
 
     const objectScripts = objects.map(n => 
-        `(class ${n.name} {
+`(class ${n.name} {
+    constructor() {
+        let addon = require('node-dotnet-bridge')
+        this.proxy = new addon.ProxyObject()
+        this.id = this.proxy.id
+        console.log("In Constructor:" + this.id)
+    }
     ${getMethods(n.methods)}
 })`).join(`
 
 `)
-    Processor = eval(objectScripts)    
 
     console.log(objectScripts)
 
+    try {
+    Processor = eval(objectScripts)    
+    
+    } catch (err) {
+        console.log(err)
+    }
     
     
     return JSON.parse(json) 
@@ -108,6 +119,7 @@ const ret = proxy.executeSync("Das kömmt äüß Typescript😁😁😁👏👏"
 const processor: ProcessorType = new Processor() 
 console.log(processor.GetTest("text", 23, new Date()))
 console.log(processor.Add(1, 2))
+const processor2: ProcessorType = new Processor() 
 
 for (let i = 0; i < 1000000; i++)
     proxy.executeSync(JSON.stringify({

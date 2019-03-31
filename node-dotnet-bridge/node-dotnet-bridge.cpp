@@ -304,7 +304,7 @@ private:
     // Native JS Functions for accessing the custom object properties
     static NAN_METHOD(New); // constructor
     static NAN_METHOD(ExecuteSync); // method
-    // static NAN_GETTER(NameGet); // (specific) property getter
+    static NAN_GETTER(IdGet); // (specific) property getter
     // static NAN_SETTER(NameSet); // (specific) property setter
 
     // the native object properties
@@ -357,11 +357,11 @@ NAN_METHOD(ProxyObject::ExecuteSync) {
 #endif
  }
 
-// NAN_GETTER(NanPerson::NameGet) {
-//   auto person = Nan::ObjectWrap::Unwrap<NanPerson>(info.Holder());
-//   auto name = Nan::New(person->name).ToLocalChecked();
-//   info.GetReturnValue().Set(name);
-// }
+NAN_GETTER(ProxyObject::IdGet) {
+  auto proxy = Nan::ObjectWrap::Unwrap<ProxyObject>(info.Holder());
+  auto id = Nan::New(proxy->id);
+  info.GetReturnValue().Set(id);
+}
 
 // NAN_SETTER(NanPerson::NameSet) {
 //   auto person = Nan::ObjectWrap::Unwrap<NanPerson>(info.Holder());
@@ -380,8 +380,8 @@ NAN_MODULE_INIT(ProxyObject::Init) {
 
     // add member functions and accessors
     Nan::SetPrototypeMethod(ctor, "executeSync", ExecuteSync);
-    // auto pname = Nan::New("name").ToLocalChecked();
-    // Nan::SetAccessor(ctorInst, pname, NameGet, NameSet);
+    auto pid = Nan::New("id").ToLocalChecked();
+    Nan::SetAccessor(ctorInst, pid, IdGet);
   
     Nan::Set(target, cname, Nan::GetFunction(ctor).ToLocalChecked());
 }
