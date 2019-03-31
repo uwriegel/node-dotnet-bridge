@@ -101,13 +101,16 @@ NAN_METHOD(Initialize) {
     auto settings = Handle<Object>::Cast(info[0]);
     auto loggingValue = settings->Get(New<String>("logCallback").ToLocalChecked());
     auto deserializeValue = settings->Get(New<String>("deserialize").ToLocalChecked());
+    auto moduleValue = settings->Get(New<String>("module").ToLocalChecked());
+    v8::String::Value strval(moduleValue);
+    auto module = (wchar_t*)*strval;
 
     auto callback = Local<Function>::Cast(loggingValue);
     loggingCallbackPersist.Reset(isolate, callback);
 
     callback = Local<Function>::Cast(deserializeValue);
     deserializeCallbackPersist.Reset(isolate, callback);
-printf("Super");
+
 #if WINDOWS
     auto clrBasePath = "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\";
     auto dllName = "coreclr.dll";
@@ -278,8 +281,7 @@ printf("Super");
 		return;
 	}
 
-    printf("Super");
-	auto ret = initializeDelegate(L"TestModule");
+	auto ret = initializeDelegate(module);
 	log(isolate, ret);
     deserialize(isolate, ret);
 
@@ -367,9 +369,9 @@ private:
     // static NAN_SETTER(NameSet); // (specific) property setter
 
     // the native object properties
-    ProxyObject() : id(++proxyIdFactory) {
-        name = L"Processor";
-        constructObjectDelegate(id, name.c_str());
+    ProxyObject(wchar_t* name) : id(++proxyIdFactory) {
+        this->name = name;
+        constructObjectDelegate(id, this->name.c_str());
     }
 
     ~ProxyObject() {
@@ -392,9 +394,8 @@ NAN_METHOD(ProxyObject::New) {
         return;
     }
     
-    //auto name = Nan::To<v8::String>(info[0]).ToLocalChecked();
-    //auto proxy = new ProxyObject(*Nan::Utf8String(name));
-    auto proxy = new ProxyObject();
+    v8::String::Value s(info[0]);
+    auto proxy = new ProxyObject((wchar_t*)*s);
 
     // [NOTE] break vm if run the under code in no-`new` function call 
     proxy->Wrap(info.This()); // `Wrap` bind C++ object to JS object 

@@ -7,6 +7,7 @@ declare module 'node-dotnet-bridge' {
     }
     
     interface Settings {
+        module: string, 
         logCallback: ((text: string)=>void) | undefined
         deserialize: (json: string)=>any
         resolveCoreclr: (coreBasePath: string, dllName: string)=>CorePathResult
@@ -16,6 +17,7 @@ declare module 'node-dotnet-bridge' {
     function unInitialize(): void
     
     class ProxyObject {
+        constructor(module: string)
         executeSync(payload: string): string
     }
 }
