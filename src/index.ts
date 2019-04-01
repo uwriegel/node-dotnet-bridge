@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as Path from 'path'
-import { initialize, unInitialize, ProxyObject } from 'node-dotnet-bridge'
+import { initialize, unInitialize, ProxyObject, executeAsync } from 'node-dotnet-bridge'
 
 declare class ProcessorType {
     GetTest(text: string, number: Number, datetime: Date): string
@@ -123,6 +123,15 @@ console.log(processor.GetTest("text", 23, new Date()))
 console.log(processor.Add(1, 2))
 const processor2: ProcessorType = new Processor() 
 
+try {
+executeAsync(1, "GetTest", res => {
+    let ress = res
+}, "Das kömmt äüß Typescript😁😁😁👏👏", 456, new Date())
+}
+catch (err)
+{
+    console.log(err)
+}
 
 let date = new Date()
 let result = processor.GetTest("text", 23, date)

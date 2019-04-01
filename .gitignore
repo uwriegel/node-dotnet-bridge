@@ -17,3 +17,5 @@ CSharp/NodeDotnet.Core/obj/
 CSharp/NodeDotnetTest/x64
 CSharp/TestModule/bin/
 CSharp/TestModule/obj/
+CSharp/Tester/bin/
+CSharp/Tester/obj/

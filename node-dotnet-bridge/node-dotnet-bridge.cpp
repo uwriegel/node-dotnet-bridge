@@ -336,10 +336,10 @@ NAN_METHOD(UnInitialize) {
 
 NAN_METHOD(Execute) {
     auto isolate = info.GetIsolate();
+
     Nan::Maybe<double> value = Nan::To<double>(info[0]); 
     double id = value.FromJust();
     v8::String::Value methodName(info[1]);
-
     int position = 0;
     char* buffer = (char*)malloc(1000);
     for (auto i = 2; i < info.Length(); i++) {
@@ -366,6 +366,50 @@ NAN_METHOD(Execute) {
     auto ret = executeDelegate(id, (wchar_t*)*methodName, buffer, position);
     auto str = String::NewFromTwoByte(isolate, (uint16_t*)ret);
     info.GetReturnValue().Set(str);
+    free(buffer);
+#if WINDOWS
+	CoTaskMemFree(ret);
+#elif LINUX
+	free(ret);
+#endif
+}
+
+NAN_METHOD(ExecuteAsync) {
+    auto isolate = info.GetIsolate();
+
+    Nan::Maybe<double> value = Nan::To<double>(info[0]); 
+    double id = value.FromJust();
+    v8::String::Value methodName(info[1]);
+
+    int position = 0;
+    char* buffer = (char*)malloc(1000);
+    for (auto i = 3; i < info.Length(); i++) {
+        if (info[i]->IsString()) {
+            v8::String::Value strval(info[i]);
+            auto str = (wchar_t*)*strval;
+            int len = wcslen(str) * 2;
+            memcpy(buffer + position, &len, 4);
+            position+=4;
+            memcpy(buffer + position, str, len);
+            position += 2*len;
+        }
+        else if (info[i]->IsInt32() ||info[i]->IsUint32()) {
+            Nan::Maybe<uint32_t> value = Nan::To<uint32_t>(info[i]); 
+            uint32_t val = value.FromJust();   
+            int len = 4;
+            memcpy(buffer + position, &len, 4);         
+            position+=4;
+            memcpy(buffer + position, &val, 4);
+            position+=4;
+        }
+    }
+
+    auto callback = Local<Function>::Cast(info[2]);
+    auto ret = executeDelegate(id, (wchar_t*)*methodName, buffer, position);
+    auto str = String::NewFromTwoByte(isolate, (uint16_t*)ret);
+    Handle<Value> argv[] = { str };
+    callback->Call(isolate->GetCurrentContext()->Global(), 1, argv);
+
     free(buffer);
 #if WINDOWS
 	CoTaskMemFree(ret);
@@ -483,6 +527,7 @@ NAN_MODULE_INIT(init) {
     Nan::Set(target, New<String>("initialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(Initialize)).ToLocalChecked());
     Nan::Set(target, New<String>("unInitialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(UnInitialize)).ToLocalChecked());
     Nan::Set(target, New<String>("execute").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(Execute)).ToLocalChecked());
+    Nan::Set(target, New<String>("executeAsync").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(ExecuteAsync)).ToLocalChecked());
     ProxyObject::Init(target);
 }
 

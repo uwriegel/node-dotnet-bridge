@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace TestModule
 {
     [JavascriptObject]
-    public class Processor
+    public class Processor : IJavascriptObject
     {
         [JavascriptMethod]
         public string GetTest(string text, double number, DateTime dateTime)
@@ -23,5 +23,8 @@ namespace TestModule
         }
 
         public int Noop() => 9;
+
+        public string Execute(string method, string payload)
+            => "returned from C#: " + payload; 
     }
 }
