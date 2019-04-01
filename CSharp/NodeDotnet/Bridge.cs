@@ -61,6 +61,14 @@ namespace NodeDotnet
         public static void DeleteObject(int objectId)
             => objects.Remove(objectId);
 
+        static int start = 0;
+        [return: MarshalAs(UnmanagedType.LPWStr)]
+        public static string GetEvent()
+        {
+            Thread.Sleep(500);
+            return $"New Event: ${++start}"; 
+        }
+
         [return: MarshalAs(UnmanagedType.LPWStr)]
         public static string ExecuteSync([MarshalAs(UnmanagedType.LPWStr)] string input)
             =>"Retörning from Mänaged Cöde: " + input;

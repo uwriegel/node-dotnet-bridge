@@ -20,48 +20,6 @@ using namespace std;
 using namespace Nan;
 using namespace v8;
 
-class EventWorker : public AsyncProgressWorker {
-public:
-    EventWorker(Callback * callback, Callback * progress) 
-        : AsyncProgressWorker(callback)
-        , progress(progress) {}
-    
-    // Executes in worker thread
-    void Execute(const AsyncProgressWorker::ExecutionProgress & progress) {
-
-        // vector<int> is_prime(limit, true);
-        for (int n = 0; n < 100; n++ ) {
-             double p = 100.0 * n;
-             progress.Send(reinterpret_cast<const char*>(&p), sizeof(double));
-        //     if (is_prime[n] ) primes.push_back(n);
-        //     for (int i = n * n; i < limit; i+= n) {
-        //         is_prime[i] = false;
-        //     }
-             this_thread::sleep_for(chrono::milliseconds(500));
-        }
-    }
-
-    // Executes in event loop
-    void HandleOKCallback () {
-        //Local<Array> results = New<Array>(primes.size());
-        // for ( unsigned int i = 0; i < primes.size(); i++ ) {
-        //     Nan::Set(results, i, New<v8::Number>(primes[i]));
-        // }  
-        // Local<Value> argv[] = { results };
-        // callback->Call(1, argv);
-    }
-
-    void HandleProgressCallback(const char *data, size_t size) {
-        // Required, this is not created automatically 
-        Nan::HandleScope scope; 
-
-        Local<Value> argv[] = { Nan::New<v8::Number>(*reinterpret_cast<double*>(const_cast<char*>(data))) };
-        progress->Call(1, argv);
-    }
-private:
-    Callback *progress;
-};
-
 // Function pointer types for the managed call and callback
 typedef int (*report_callback_ptr)(int progress);
 typedef char* (*doWork_ptr)(const char* jobName, int iterations, int dataSize, double* data, report_callback_ptr callbackFunction);
@@ -77,6 +35,8 @@ typedef wchar_t* (*execute2SyncPtr)(char* payload, int length, char* result, int
 execute2SyncPtr execute2SyncDelegate;
 typedef wchar_t* (*executePtr)(int objectId, const wchar_t* methodName, char* payload, int length);
 executePtr executeDelegate;
+typedef wchar_t* (*getEventPtr)();
+getEventPtr getEventDelegate;
 
 string ws2utf8(const wstring &input) {
 	wstring_convert<codecvt_utf8<wchar_t>> utf8conv;
@@ -123,6 +83,51 @@ void deserialize(Isolate* isolate, const wchar_t* text) {
         }
     }
 }
+
+class EventWorker : public AsyncProgressWorker {
+public:
+    EventWorker(Callback * callback, Callback * progress) 
+        : AsyncProgressWorker(callback)
+        , progress(progress) {}
+    
+    // Executes in worker thread
+    void Execute(const AsyncProgressWorker::ExecutionProgress & progress) {
+        while (true)
+        {
+            auto evt = getEventDelegate();
+            progress.Send((const char*)evt, 0);
+            auto u = ws2utf8(evt);
+            printf("Versuch %s\n", u.c_str());
+#if WINDOWS
+	        CoTaskMemFree(evt);
+#elif LINUX
+	        free(evt);
+#endif        
+        }
+    }
+
+    // Executes in event loop
+    void HandleOKCallback () {
+        //Local<Array> results = New<Array>(primes.size());
+        // for ( unsigned int i = 0; i < primes.size(); i++ ) {
+        //     Nan::Set(results, i, New<v8::Number>(primes[i]));
+        // }  
+        // Local<Value> argv[] = { results };
+        // callback->Call(1, argv);
+    }
+
+    void HandleProgressCallback(const char *data, size_t size) {
+        // Required, this is not created automatically 
+        Nan::HandleScope scope; 
+        
+        auto evt = (wchar_t*)data;
+        auto str = String::NewFromTwoByte(v8::Isolate::GetCurrent(), (uint16_t*)evt);
+        Local<Value> argv[] = { str };
+        progress->Call(1, argv);
+    }
+private:
+    Callback *progress;
+};
 
 int ReportProgressCallback(int progress) {
 	// Just print the progress parameter to the console and return -progress
@@ -342,6 +347,22 @@ NAN_METHOD(Initialize) {
 		return;
 	}
 
+	hr = createManagedDelegate(
+		hostHandle,
+		domainId,
+		"NodeDotnet",
+		"NodeDotnet.Bridge",
+		"GetEvent",
+		(void**)&getEventDelegate);
+
+	if (hr >= 0)
+		log(isolate, "getEventDelegate created\n");
+	else
+	{
+		log(isolate, "getEventDelegate failed"); // - status: 0x%08x\n", hr);
+		return;
+	}
+    
 	auto ret = initializeDelegate(module);
 	log(isolate, ret);
     deserialize(isolate, ret);
