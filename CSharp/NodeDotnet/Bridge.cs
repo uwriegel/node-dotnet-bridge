@@ -62,9 +62,17 @@ namespace NodeDotnet
             => objects.Remove(objectId);
 
         [return: MarshalAs(UnmanagedType.LPWStr)]
-        public static string ExecuteSync(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string method, [MarshalAs(UnmanagedType.LPWStr)] string input)
+        public static string ExecuteSync([MarshalAs(UnmanagedType.LPWStr)] string input)
             =>"Retörning from Mänaged Cöde: " + input;
 
+        public static void Execute2Sync([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)][In] byte[] payload, int size, 
+            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)][Out] byte[] result, int resultSize)
+        {
+            var text = Encoding.UTF8.GetString(payload);
+            var resultString = "Retörning from Mänaged Cöde: " + text;
+            resultSize = Encoding.UTF8.GetBytes(resultString, 0, resultString.Length, result, 0);
+        }
+        
         [return: MarshalAs(UnmanagedType.LPWStr)]
         public static string Execute(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string method,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)][In] byte[] payload, int size)

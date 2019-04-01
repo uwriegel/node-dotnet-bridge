@@ -28,8 +28,10 @@ typedef void (*constructObjectPtr)(int objectId, const wchar_t* objectName);
 constructObjectPtr constructObjectDelegate;
 typedef void (*deleteObjectPtr)(int objectId);
 deleteObjectPtr deleteObjectDelegate;
-typedef wchar_t* (*executeSyncPtr)(int objectId, const wchar_t* methodName, wchar_t* payload);
+typedef wchar_t* (*executeSyncPtr)(wchar_t* payload);
 executeSyncPtr executeSyncDelegate;
+typedef wchar_t* (*execute2SyncPtr)(char* payload, int length, char* result, int resultLength);
+execute2SyncPtr execute2SyncDelegate;
 typedef wchar_t* (*executePtr)(int objectId, const wchar_t* methodName, char* payload, int length);
 executePtr executeDelegate;
 
@@ -233,7 +235,7 @@ NAN_METHOD(Initialize) {
 		return;
 	}
 
-	hr = createManagedDelegate(
+    hr = createManagedDelegate(
 		hostHandle,
 		domainId,
 		"NodeDotnet",
@@ -278,6 +280,22 @@ NAN_METHOD(Initialize) {
 	else
 	{
 		log(isolate, "executeSyncDelegate failed"); // - status: 0x%08x\n", hr);
+		return;
+	}
+
+	hr = createManagedDelegate(
+		hostHandle,
+		domainId,
+		"NodeDotnet",
+		"NodeDotnet.Bridge",
+		"Execute2Sync",
+		(void**)&execute2SyncDelegate);
+
+	if (hr >= 0)
+		log(isolate, "execute2SyncDelegate created\n");
+	else
+	{
+		log(isolate, "execute2SyncDelegate failed"); // - status: 0x%08x\n", hr);
 		return;
 	}
 
@@ -365,6 +383,7 @@ private:
     // Native JS Functions for accessing the custom object properties
     static NAN_METHOD(New); // constructor
     static NAN_METHOD(ExecuteSync); // method
+    static NAN_METHOD(Execute2Sync); // method
     static NAN_GETTER(IdGet); // (specific) property getter
     // static NAN_SETTER(NameSet); // (specific) property setter
 
@@ -407,15 +426,28 @@ NAN_METHOD(ProxyObject::ExecuteSync) {
 
     auto isolate = info.GetIsolate();
     v8::String::Value s(info[0]);
- 	auto ret = executeSyncDelegate(proxy->id, proxy->name.c_str(), (wchar_t*)*s);
+ 	auto ret = executeSyncDelegate((wchar_t*)*s);
     auto str = String::NewFromTwoByte(isolate, (uint16_t*)ret);
-     info.GetReturnValue().Set(str);
+    info.GetReturnValue().Set(str);
 #if WINDOWS
 	CoTaskMemFree(ret);
 #elif LINUX
 	free(ret);
 #endif
- }
+}
+
+NAN_METHOD(ProxyObject::Execute2Sync) {
+    auto proxy = Nan::ObjectWrap::Unwrap<ProxyObject>(info.Holder());
+
+    auto isolate = info.GetIsolate();
+    String::Utf8Value text(info[0]);
+    char* buf = *text;
+    int len = strlen(buf);
+    char resultBuf[1000];
+ 	execute2SyncDelegate(buf, len, resultBuf, 1000);
+    auto str = String::NewFromUtf8(isolate, resultBuf);
+    info.GetReturnValue().Set(str);
+}
 
 NAN_GETTER(ProxyObject::IdGet) {
   auto proxy = Nan::ObjectWrap::Unwrap<ProxyObject>(info.Holder());
@@ -440,7 +472,8 @@ NAN_MODULE_INIT(ProxyObject::Init) {
 
     // add member functions and accessors
     Nan::SetPrototypeMethod(ctor, "executeSync", ExecuteSync);
-    auto pid = Nan::New("id").ToLocalChecked();
+    Nan::SetPrototypeMethod(ctor, "execute2Sync", Execute2Sync);
+    auto pid = Nan::New<String>("id").ToLocalChecked();
     Nan::SetAccessor(ctorInst, pid, IdGet);
   
     Nan::Set(target, cname, Nan::GetFunction(ctor).ToLocalChecked());

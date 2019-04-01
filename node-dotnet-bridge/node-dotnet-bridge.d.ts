@@ -19,6 +19,7 @@ declare module 'node-dotnet-bridge' {
     class ProxyObject {
         constructor(module: string)
         executeSync(payload: string): string
+        execute2Sync(payload: string): string
     }
 }
 

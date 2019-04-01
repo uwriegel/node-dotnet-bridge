@@ -116,6 +116,7 @@ const proxy = new ProxyObject("Processor")
 
 multiObjects()
 const ret = proxy.executeSync("Das kömmt äüß Typescript😁😁😁👏👏")
+const ret1 = proxy.execute2Sync("Das kömmt äüß Typescript😁😁😁👏👏")
 
 const processor: ProcessorType = new Processor() 
 console.log(processor.GetTest("text", 23, new Date()))
@@ -128,6 +129,10 @@ let result = processor.GetTest("text", 23, date)
 
 for (let i = 0; i < 1000000; i++)
     proxy.executeSync(JSON.stringify({
+        name: "Das kömmt äüß Typescript😁😁😁👏👏"
+    }))
+for (let i = 0; i < 1000000; i++)
+    proxy.execute2Sync(JSON.stringify({
         name: "Das kömmt äüß Typescript😁😁😁👏👏"
     }))
 for (let i = 0; i < 1000000; i++)
