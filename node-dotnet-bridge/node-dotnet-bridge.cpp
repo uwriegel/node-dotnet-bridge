@@ -19,6 +19,50 @@ using namespace std;
 using namespace Nan;
 using namespace v8;
 
+class EventWorker : public AsyncProgressWorker {
+public:
+    EventWorker(Callback * callback, Callback * progress) 
+        : AsyncProgressWorker(callback)
+        , progress(progress) {}
+    
+    // Executes in worker thread
+    void Execute(const AsyncProgressWorker::ExecutionProgress & progress) {
+
+        // vector<int> is_prime(limit, true);
+        // for (int n = 2; n < limit; n++ ) {
+        //     double p = (100.0 * n) / limit;
+        //     progress.Send(reinterpret_cast<const char*>(&p), 
+        //         sizeof(double));
+        //     if (is_prime[n] ) primes.push_back(n);
+        //     for (int i = n * n; i < limit; i+= n) {
+        //         is_prime[i] = false;
+        //     }
+        //     std::this_thread::sleep_for(
+        //             chrono::milliseconds(100));
+        // }
+    }
+
+    // Executes in event loop
+    void HandleOKCallback () {
+        //Local<Array> results = New<Array>(primes.size());
+        // for ( unsigned int i = 0; i < primes.size(); i++ ) {
+        //     Nan::Set(results, i, New<v8::Number>(primes[i]));
+        // }  
+        // Local<Value> argv[] = { results };
+        // callback->Call(1, argv);
+    }
+
+    void HandleProgressCallback(const char *data, size_t size) {
+        // Required, this is not created automatically 
+        Nan::HandleScope scope; 
+
+        Local<Value> argv[] = { Nan::New<v8::Number>(*reinterpret_cast<double*>(const_cast<char*>(data))) };
+        progress->Call(1, argv);
+    }
+private:
+    Callback *progress;
+};
+
 // Function pointer types for the managed call and callback
 typedef int (*report_callback_ptr)(int progress);
 typedef char* (*doWork_ptr)(const char* jobName, int iterations, int dataSize, double* data, report_callback_ptr callbackFunction);
@@ -491,6 +535,13 @@ NAN_METHOD(ProxyObject::Execute2Sync) {
  	execute2SyncDelegate(buf, len, resultBuf, 1000);
     auto str = String::NewFromUtf8(isolate, resultBuf);
     info.GetReturnValue().Set(str);
+}
+
+NAN_METHOD(StartEventLoop) {
+    Callback *eventCallback = new Callback(info[1].As<Function>());
+    Callback *callback = new Callback(info[0].As<Function>());
+
+    AsyncQueueWorker(new EventWorker(callback, eventCallback));
 }
 
 NAN_GETTER(ProxyObject::IdGet) {
