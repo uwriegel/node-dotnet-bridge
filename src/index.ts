@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as Path from 'path'
-import { initialize, unInitialize, ProxyObject, executeAsync } from 'node-dotnet-bridge'
+import * as http from 'http'
+import { initialize, unInitialize, ProxyObject, executeAsync, runEventLoop } from 'node-dotnet-bridge'
 
 declare class ProcessorType {
     GetTest(text: string, number: Number, datetime: Date): string
@@ -133,22 +134,39 @@ catch (err)
     console.log(err)
 }
 
+runEventLoop(() => {}, num => {
+    console.log(`Event: ${num}`)
+})
+
 let date = new Date()
 let result = processor.GetTest("text", 23, date)
 
-for (let i = 0; i < 1000000; i++)
-    proxy.executeSync(JSON.stringify({
-        name: "Das kömmt äüß Typescript😁😁😁👏👏"
-    }))
-for (let i = 0; i < 1000000; i++)
-    proxy.execute2Sync(JSON.stringify({
-        name: "Das kömmt äüß Typescript😁😁😁👏👏"
-    }))
-for (let i = 0; i < 1000000; i++)
-    processor.Add(1,2)
-    //processor.GetTest("text", 23, date)
+// for (let i = 0; i < 1000000; i++)
+//     proxy.executeSync(JSON.stringify({
+//         name: "Das kömmt äüß Typescript😁😁😁👏👏"
+//     }))
+// for (let i = 0; i < 1000000; i++)
+//     proxy.execute2Sync(JSON.stringify({
+//         name: "Das kömmt äüß Typescript😁😁😁👏👏"
+//     }))
+// for (let i = 0; i < 1000000; i++)
+//     processor.Add(1,2)
+//     //processor.GetTest("text", 23, date)
 
-unInitialize()
-console.log("Finished")
+// unInitialize()
+// console.log("Finished")
 
 
+
+// const hostname = '127.0.0.1'
+// const port = 3000
+
+// const server = http.createServer((req, res) => {
+//     res.statusCode = 200;
+//     res.setHeader('Content-Type', 'text/plain');
+//     res.end('Hello World\n');
+// })
+
+// server.listen(port, hostname, () => {
+//     console.log(`Server running at http://${hostname}:${port}/`)
+// })

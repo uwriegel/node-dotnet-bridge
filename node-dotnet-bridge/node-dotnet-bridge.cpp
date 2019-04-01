@@ -2,6 +2,7 @@
 #include <string>
 #include <locale>
 #include <codecvt>
+#include <thread>
 
 #if WINDOWS
 #include <Windows.h>
@@ -29,17 +30,15 @@ public:
     void Execute(const AsyncProgressWorker::ExecutionProgress & progress) {
 
         // vector<int> is_prime(limit, true);
-        // for (int n = 2; n < limit; n++ ) {
-        //     double p = (100.0 * n) / limit;
-        //     progress.Send(reinterpret_cast<const char*>(&p), 
-        //         sizeof(double));
+        for (int n = 0; n < 100; n++ ) {
+             double p = 100.0 * n;
+             progress.Send(reinterpret_cast<const char*>(&p), sizeof(double));
         //     if (is_prime[n] ) primes.push_back(n);
         //     for (int i = n * n; i < limit; i+= n) {
         //         is_prime[i] = false;
         //     }
-        //     std::this_thread::sleep_for(
-        //             chrono::milliseconds(100));
-        // }
+             this_thread::sleep_for(chrono::milliseconds(500));
+        }
     }
 
     // Executes in event loop
@@ -537,7 +536,7 @@ NAN_METHOD(ProxyObject::Execute2Sync) {
     info.GetReturnValue().Set(str);
 }
 
-NAN_METHOD(StartEventLoop) {
+NAN_METHOD(RunEventLoop) {
     Callback *eventCallback = new Callback(info[1].As<Function>());
     Callback *callback = new Callback(info[0].As<Function>());
 
@@ -579,6 +578,8 @@ NAN_MODULE_INIT(init) {
     Nan::Set(target, New<String>("unInitialize").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(UnInitialize)).ToLocalChecked());
     Nan::Set(target, New<String>("execute").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(Execute)).ToLocalChecked());
     Nan::Set(target, New<String>("executeAsync").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(ExecuteAsync)).ToLocalChecked());
+    Nan::Set(target, New<String>("runEventLoop").ToLocalChecked(), Nan::GetFunction(New<FunctionTemplate>(RunEventLoop)).ToLocalChecked());
+    
     ProxyObject::Init(target);
 }
 
