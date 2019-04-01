@@ -95,13 +95,11 @@ public:
         while (true)
         {
             auto evt = getEventDelegate();
-            progress.Send((const char*)evt, 0);
-            auto u = ws2utf8(evt);
-            printf("Versuch %s\n", u.c_str());
+            progress.Send((const char*)evt, (wcslen(evt) + 1)*2);
 #if WINDOWS
-	        CoTaskMemFree(evt);
+        CoTaskMemFree(evt);
 #elif LINUX
-	        free(evt);
+        free(evt);
 #endif        
         }
     }
@@ -121,7 +119,7 @@ public:
         Nan::HandleScope scope; 
         
         auto evt = (wchar_t*)data;
-        auto str = String::NewFromTwoByte(v8::Isolate::GetCurrent(), (uint16_t*)evt);
+        auto str = Nan::New((uint16_t*)evt).ToLocalChecked();
         Local<Value> argv[] = { str };
         progress->Call(1, argv);
     }
