@@ -33,19 +33,15 @@ namespace NodeDotnet
                                   where n.GetCustomAttribute(typeof(JavascriptObjectAttribute)) != null
                                   select n;
 
-                objectNames = objectTypes.ToDictionary(m => m.Name, m => new ObjectInfo(m));
-                var objects =
-                    from n in objectTypes
-                    select new JSClass(n.Name,
-                        from m in n.GetMethods()
-                        where m.GetCustomAttribute(typeof(JavascriptMethodAttribute)) != null
-                        select new Method(m));
+                objectInfos = objectTypes.ToDictionary(m => m.Name, m => new ObjectInfo(m));
+                var classes = objectInfos.ToArray().Select(n => new JSClass(n.Key, n.Value.Methods.Values));
                 var seri = new DataContractJsonSerializer(typeof(JSClass[]));
                 var ms = new MemoryStream();
-                seri.WriteObject(ms, objects.ToArray());
+                seri.WriteObject(ms, classes.ToArray());
                 ms.Capacity = (int)ms.Length;
                 var buff = ms.GetBuffer();
                 var result = Encoding.UTF8.GetString(buff);
+
                 return result;
             }
             catch (Exception e)
@@ -56,7 +52,7 @@ namespace NodeDotnet
 
         public static void ConstructObject(int objectId, [MarshalAs(UnmanagedType.LPWStr)] string name)
         {
-            var info = objectNames[name];
+            var info = objectInfos[name];
             var t = assembly.GetType(info.FullName);
             var o = Activator.CreateInstance(t);
             objects[objectId] = new ObjectHolder(o, info);
@@ -112,16 +108,22 @@ namespace NodeDotnet
 
             object GetParameter(Parameter parameterInfo)
             {
-                switch (parameterInfo.InternalType)
+                switch (parameterInfo.Type)
                 {
-                    case InternalParameterType.Int:
-                        return ReadInt(payload, ref position);
-                    case InternalParameterType.Double:
-                        ReadInt(payload, ref position);
-                        return 9.9;
-                    case InternalParameterType.String:
+                    case ParameterType.Number:
+                        switch (parameterInfo.NumberType)
+                        {
+                            case NumberType.Int:
+                                return ReadInt(payload, ref position);
+                            case NumberType.Double:
+                                ReadInt(payload, ref position);
+                                return 9.9;
+                            default:
+                                return null;
+                        }
+                    case ParameterType.String:
                         return ReadString(payload, ref position);
-                    case InternalParameterType.Date:
+                    case ParameterType.Date:
                         return DateTime.Now;
                     default:
                         return null;
@@ -150,7 +152,7 @@ namespace NodeDotnet
             return result;
         }
 
-        static Dictionary<string, ObjectInfo> objectNames = new Dictionary<string, ObjectInfo>();
+        static Dictionary<string, ObjectInfo> objectInfos = new Dictionary<string, ObjectInfo>();
         static Dictionary<int, ObjectHolder> objects = new Dictionary<int, ObjectHolder>();
         static Assembly assembly;
     }

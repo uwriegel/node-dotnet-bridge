@@ -4,11 +4,10 @@ using System.Text;
 
 namespace NodeDotnet
 {
-    enum InternalParameterType
+    enum NumberType
     {
-        String,
+        Nan,
         Int,
         Double,
-        Date
     }
 }

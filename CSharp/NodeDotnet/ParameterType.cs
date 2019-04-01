@@ -6,8 +6,10 @@ namespace NodeDotnet
 {
     public enum ParameterType
     {
+        None,
         String,
         Number,
         Date,
+        Task
     }
 }

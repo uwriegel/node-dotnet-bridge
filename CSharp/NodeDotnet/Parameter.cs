@@ -14,32 +14,36 @@ namespace NodeDotnet
         {
             Name = info.Name;
             var t = info.ParameterType.Name;
-            switch (t)
+            (Type, NumberType, SubType) = GetParameter(t, info);
+        }
+
+        (ParameterType, NumberType, ParameterType) GetParameter(string name, ParameterInfo info)
+        {
+            switch (name)
             {
                 case "String":
-                    Type = ParameterType.String;
-                    InternalType = InternalParameterType.String;
-                    break;
+                    return (ParameterType.String, NumberType.Nan, ParameterType.None);
                 case "Int32":
                 case "UInt32":
-                    InternalType = InternalParameterType.Int;
-                    Type = ParameterType.Number;
-                    break;
+                    return (ParameterType.Number, NumberType.Int, ParameterType.None);
                 case "Int64":
                 case "Float":
                 case "Double":
                 case "UInt64":
-                    Type = ParameterType.Number;
-                    InternalType = InternalParameterType.Double;
-                    break;
+                    return (ParameterType.Number, NumberType.Double, ParameterType.None);
                 case "DateTime":
-                    Type = ParameterType.Date;
-                    InternalType = InternalParameterType.Date;
-                    break;
+                    return (ParameterType.Date, NumberType.Nan, ParameterType.None);
                 case "Task`1":
-                    Type = ParameterType.Date;
-                    InternalType = InternalParameterType.Date;
-                    break;
+                    var fullName = info.ParameterType.FullName;
+                    var pos1 = fullName.IndexOf("[[") + 2;
+                    var subTypeStr = fullName.Substring(pos1);
+                    pos1 = subTypeStr.IndexOf(".") + 1;
+                    var pos2 = subTypeStr.IndexOf(",");
+                    subTypeStr = subTypeStr.Substring(pos1, pos2 - pos1);
+                    var (subType, subNumberType, _) = GetParameter(subTypeStr, info);
+                    return (ParameterType.Task, subNumberType, subType);
+                default:
+                    return (ParameterType.None, NumberType.Nan, ParameterType.None);
             }
         }
 
@@ -47,7 +51,9 @@ namespace NodeDotnet
         public string Name;
         [DataMember(Name = "type")]
         public ParameterType Type;
+        [DataMember(Name = "subType", EmitDefaultValue=false)]
+        public ParameterType SubType;
 
-        internal InternalParameterType InternalType { get; }
+        internal NumberType NumberType { get; }
     }
 }
