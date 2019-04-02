@@ -4,9 +4,11 @@
     "description": "Test package for testing node-dotnet addon",
     "main": "dist/index.js",
     "scripts": {
-        "start": "node dist/index.js",
-        "prestart": "npm run build",
-        "build": "tsc"
+        "start": "node dist/index.js --debug",
+        "start:dev": "node dist/index.js",
+        "prestart:dev": "npm run build --debug",
+        "build": "tsc",
+        "build:dev": "tsc"
     },
     "dependencies": {
         "@types/node": "^11.12.0",
