@@ -1,4 +1,5 @@
 #include <nan.h>
+#include <uv.h>
 #include <string>
 #include <locale>
 #include <codecvt>
@@ -143,9 +144,96 @@ void log(Isolate* isolate, const char* text) {
     log(isolate, str); 
 }
 
+Callback *uvCallback;
+typedef void (*uv_async_dotnet_cb)(void* data);
+
+struct Uv_dotnet_async {
+    uv_async_t uv_async;
+    uv_async_dotnet_cb action;
+    bool singleton;
+    void* data;
+};
+
+static uv_sem_t* funcWaitHandle;
+
+void close_uv_edge_async_cb(uv_handle_t* handle) {
+    auto uv_dotnet_async = (Uv_dotnet_async*)handle;
+    delete uv_dotnet_async;
+}
+
+
+void CancelAction(Uv_dotnet_async* uv_dotnet_async)
+{
+    printf("V8SynchronizationContext::CancelAction\n");
+    if (uv_dotnet_async->singleton)
+    {
+        // This is a cancellation of an action registered on CLR thread.
+        // Release the wait handle to allow the uv_edge_async reuse by another CLR thread.
+        uv_dotnet_async->action = nullptr;
+        uv_dotnet_async->data = nullptr;
+        uv_sem_post(funcWaitHandle);
+    }
+    else
+    {
+        // This is a cancellation of an action registered on V8 thread.
+        // Unref the handle to stop preventing the process from exiting.
+        // V8SynchronizationContext::Unref(uv_edge_async);
+        uv_close((uv_handle_t*)&uv_dotnet_async->uv_async, close_uv_edge_async_cb);
+    }
+}
+
+void continueOnV8Thread(uv_async_t* handle, int status)
+{
+    // This executes on V8 thread
+
+    printf("continueOnV8Thread\n");
+    Nan::HandleScope scope;
+    auto uv_dotnet_async = (Uv_dotnet_async*)handle;
+    auto action = uv_dotnet_async->action;
+    void* data = uv_dotnet_async->data;
+    CancelAction(uv_dotnet_async);
+    action(data);
+}
+
+void CallbackFunction(void* data) {
+    printf("This is the callback: %s\n", data);
+
+     // Required, this is not created automatically 
+    Nan::HandleScope scope; 
+    auto str = New<String>((const char*)data).ToLocalChecked();
+    Handle<Value> argv[] = { str };
+    uvCallback->Call(Nan::GetCurrentContext()->Global(), 1, argv);
+}
+
+void ExecuteAction(Uv_dotnet_async* uv_dotnet_async) {
+    printf("V8SynchronizationContext::ExecuteAction\n");
+    uv_async_send(&uv_dotnet_async->uv_async);
+}
+
+Uv_dotnet_async* uv_dotnet_async{nullptr};
+
+void call_from_thread() {
+    printf("Called from thread\n");
+    this_thread::sleep_for(10s);
+    printf("Woken up");
+    uv_dotnet_async->data = "This is the data for callback!!!";
+    ExecuteAction(uv_dotnet_async);
+ }
+
+
 NAN_METHOD(Initialize) {
     auto isolate = info.GetIsolate();
 
+    uv_dotnet_async = new Uv_dotnet_async;
+    uv_dotnet_async->action = CallbackFunction;
+    uv_dotnet_async->data = "This is initializazion data";
+    uv_dotnet_async->singleton = FALSE;
+    uv_async_init(uv_default_loop(), &uv_dotnet_async->uv_async, (uv_async_cb)continueOnV8Thread);
+
+    auto t1 = thread(call_from_thread);
+    t1.detach();
+    printf("Running thread\n");
+    
     auto code = Nan::New<v8::String>("var welt = 'Hello'; welt + ', World!'").ToLocalChecked();
     Nan::MaybeLocal<Nan::BoundScript> script = Nan::CompileScript(code);
     Nan::MaybeLocal<v8::Value> result = Nan::RunScript(script.ToLocalChecked());
@@ -160,6 +248,10 @@ NAN_METHOD(Initialize) {
     auto module = (wchar_t*)*strval;
 
     auto callback = Local<Function>::Cast(loggingValue);
+
+
+    uvCallback = new Callback(loggingValue.As<Function>());
+
     loggingCallbackPersist.Reset(isolate, callback);
 
     callback = Local<Function>::Cast(deserializeValue);

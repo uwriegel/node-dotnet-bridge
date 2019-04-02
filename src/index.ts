@@ -3,12 +3,12 @@ import * as Path from 'path'
 import * as http from 'http'
 import { initialize, unInitialize, ProxyObject, executeAsync, runEventLoop } from 'node-dotnet-bridge'
 
-declare class ProcessorType {
-    GetTest(text: string, number: Number, datetime: Date): string
-    Add(a: number, b: number): number
-}
+// declare class ProcessorType {
+//     GetTest(text: string, number: Number, datetime: Date): string
+//     Add(a: number, b: number): number
+// }
 
-let Processor: any
+// let Processor: any
 
 const log = function(text: string) { console.log(text) }
 const deserialize = function (json: string) { 
@@ -25,27 +25,27 @@ const deserialize = function (json: string) {
     `)
     }
 
-    const objectScripts = objects.map(n => 
-`(class ${n.name} {
-    constructor() {
-        this.addon = require('node-dotnet-bridge')
-        this.proxy = new this.addon.ProxyObject("${n.name}")
-        this.id = this.proxy.id
-        console.log("In Constructor:" + this.id)
-    }
-    ${getMethods(n.methods)}
-})`).join(`
+//     const objectScripts = objects.map(n => 
+// `(class ${n.name} {
+//     constructor() {
+//         this.addon = require('node-dotnet-bridge')
+//         this.proxy = new this.addon.ProxyObject("${n.name}")
+//         this.id = this.proxy.id
+//         console.log("In Constructor:" + this.id)
+//     }
+//     ${getMethods(n.methods)}
+// })`).join(`
 
-`)
+// `)
 
-    console.log(objectScripts)
+//     console.log(objectScripts)
 
-    try {
-    Processor = eval(objectScripts)    
+//     try {
+//     Processor = eval(objectScripts)    
     
-    } catch (err) {
-        console.log(err)
-    }
+//     } catch (err) {
+//         console.log(err)
+//     }
     
     
     return JSON.parse(json) 
@@ -96,8 +96,6 @@ const resolveCoreclr = function(basePath: string, dllName: string) {
     }
 }
 
-
-
 // TODO: logCallback: kann auch null sein, dann kein Logging
 let res = initialize({
     module: "TestModule",
@@ -108,55 +106,55 @@ let res = initialize({
 
 const affe = welt
 
-function multiObjects() {
-    const proxy1 = new ProxyObject("Processor")    
-    const proxy2 = new ProxyObject("Processor")
-    const ret1 = proxy1.executeSync("👏👏")
-    const ret2 = proxy2.executeSync("Das kömmt äüß Typescript😁")
-}
+// function multiObjects() {
+//     const proxy1 = new ProxyObject("Processor")    
+//     const proxy2 = new ProxyObject("Processor")
+//     const ret1 = proxy1.executeSync("👏👏")
+//     const ret2 = proxy2.executeSync("Das kömmt äüß Typescript😁")
+// }
 
-const proxy = new ProxyObject("Processor")
+// const proxy = new ProxyObject("Processor")
 
-multiObjects()
-const ret = proxy.executeSync("Das kömmt äüß Typescript😁😁😁👏👏")
-const ret1 = proxy.execute2Sync("Das kömmt äüß Typescript😁😁😁👏👏")
+// multiObjects()
+// const ret = proxy.executeSync("Das kömmt äüß Typescript😁😁😁👏👏")
+// const ret1 = proxy.execute2Sync("Das kömmt äüß Typescript😁😁😁👏👏")
 
-const processor: ProcessorType = new Processor() 
-console.log(processor.GetTest("text", 23, new Date()))
-console.log(processor.Add(1, 2))
-const processor2: ProcessorType = new Processor() 
+// const processor: ProcessorType = new Processor() 
+// console.log(processor.GetTest("text", 23, new Date()))
+// console.log(processor.Add(1, 2))
+// const processor2: ProcessorType = new Processor() 
 
-try {
-executeAsync(1, "GetTest", res => {
-    let ress = res
-}, "Das kömmt äüß Typescript😁😁😁👏👏", 456, new Date())
-}
-catch (err)
-{
-    console.log(err)
-}
+// try {
+// executeAsync(1, "GetTest", res => {
+//     let ress = res
+// }, "Das kömmt äüß Typescript😁😁😁👏👏", 456, new Date())
+// }
+// catch (err)
+// {
+//     console.log(err)
+// }
 
-runEventLoop(() => {}, num => {
-    console.log(`Event: ${num}`)
-})
+// runEventLoop(() => {}, num => {
+//     console.log(`Event: ${num}`)
+// })
 
-let date = new Date()
-let result = processor.GetTest("text", 23, date)
+// let date = new Date()
+// let result = processor.GetTest("text", 23, date)
 
-// for (let i = 0; i < 1000000; i++)
-//     proxy.executeSync(JSON.stringify({
-//         name: "Das kömmt äüß Typescript😁😁😁👏👏"
-//     }))
-// for (let i = 0; i < 1000000; i++)
-//     proxy.execute2Sync(JSON.stringify({
-//         name: "Das kömmt äüß Typescript😁😁😁👏👏"
-//     }))
-// for (let i = 0; i < 1000000; i++)
-//     processor.Add(1,2)
-//     //processor.GetTest("text", 23, date)
+// // for (let i = 0; i < 1000000; i++)
+// //     proxy.executeSync(JSON.stringify({
+// //         name: "Das kömmt äüß Typescript😁😁😁👏👏"
+// //     }))
+// // for (let i = 0; i < 1000000; i++)
+// //     proxy.execute2Sync(JSON.stringify({
+// //         name: "Das kömmt äüß Typescript😁😁😁👏👏"
+// //     }))
+// // for (let i = 0; i < 1000000; i++)
+// //     processor.Add(1,2)
+// //     //processor.GetTest("text", 23, date)
 
-// unInitialize()
-// console.log("Finished")
+// // unInitialize()
+// // console.log("Finished")
 
 
 
