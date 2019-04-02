@@ -26,3 +26,4 @@ declare module 'node-dotnet-bridge' {
 }
 
 declare var testDate: Date
+declare var welt: string

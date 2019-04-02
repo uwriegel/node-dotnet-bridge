@@ -106,6 +106,8 @@ let res = initialize({
     resolveCoreclr: resolveCoreclr
 })
 
+const affe = welt
+
 function multiObjects() {
     const proxy1 = new ProxyObject("Processor")    
     const proxy2 = new ProxyObject("Processor")

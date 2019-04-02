@@ -146,6 +146,14 @@ void log(Isolate* isolate, const char* text) {
 NAN_METHOD(Initialize) {
     auto isolate = info.GetIsolate();
 
+
+
+    auto code = Nan::New<v8::String>("var welt = 'Hello'; return welt + ', World!'").ToLocalChecked();
+    auto script = Script::Compile(isolate->GetCurrentContext(), code).ToLocalChecked();
+    auto ress = script->Run(isolate->GetCurrentContext());
+    v8::String::Value ress8(ress.ToLocalChecked());
+    log(isolate, (wchar_t*)*ress8);
+
     auto settings = Handle<Object>::Cast(info[0]);
     auto loggingValue = settings->Get(New<String>("logCallback").ToLocalChecked());
     auto deserializeValue = settings->Get(New<String>("deserialize").ToLocalChecked());
