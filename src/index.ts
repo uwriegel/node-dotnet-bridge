@@ -1,6 +1,6 @@
 import { ProxyObject } from 'node-dotnet-bridge'
 
-const proxy = new ProxyObject("Processor")
+const proxy = new ProxyObject("Processör😁😁")
 proxy.executeAsync("Wagenladüng")
 
 console.log("finished")
