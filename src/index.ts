@@ -14,10 +14,10 @@ import { ProxyObject } from 'node-dotnet-bridge'
 
 const proxy = new ProxyObject("Processör😁😁")
 
-for (let i = 0; i < 1_000_000; i++) {
-    var text = '{"value1":1,"text":"Hallo","values":[1,2,3]}'
-    let res = JSON.parse(text)
-    //let result = proxy.executeSync("Wagenladüng")
+for (let i = 0; i < 10_000_000; i++) {
+    // var text = '{"value1":1,"text":"Hallo","values":[1,2,3]}'
+    // let res = JSON.parse(text)
+    let result = proxy.executeSync("Wagenladüng")
 }
 
 console.log("finished")
