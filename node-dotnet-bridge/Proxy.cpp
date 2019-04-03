@@ -21,6 +21,16 @@ NAN_METHOD(ProxyObject::New) {
 NAN_METHOD(ProxyObject::ExecuteSync) {
     // `Unwrap` refer C++ object from JS Object
     auto proxy = Nan::ObjectWrap::Unwrap<ProxyObject>(info.Holder());
+
+
+	string text = "'{\"value1\":1,\"text\":\"Hallo\",\"values\":[1,2,3]}'";
+	string codetext = "var text = " + text + "; JSON.parse(text)";
+
+    auto code = Nan::New<v8::String>(codetext).ToLocalChecked();
+    Nan::MaybeLocal<Nan::BoundScript> script = Nan::CompileScript(code);
+    Nan::MaybeLocal<v8::Value> result = Nan::RunScript(script.ToLocalChecked());
+
+    info.GetReturnValue().Set(result.ToLocalChecked());
 }
 
 NAN_METHOD(ProxyObject::ExecuteAsync) {

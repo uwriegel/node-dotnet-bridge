@@ -1,10 +1,37 @@
 import { ProxyObject } from 'node-dotnet-bridge'
 
+// try {
+// var aff = 
+// }
+// catch (err)
+// {
+//     console.log(err)
+// }
+
+
+//var affe = eval("var text = '{"value1":1,"text":"Hallo","values":[1,2,3]}'; JSON.parse(text)")
+
+
 const proxy = new ProxyObject("Processör😁😁")
-proxy.executeAsync("Wagenladüng")
+
+for (let i = 0; i < 1_000_000; i++) {
+    var text = '{"value1":1,"text":"Hallo","values":[1,2,3]}'
+    let res = JSON.parse(text)
+    //let result = proxy.executeSync("Wagenladüng")
+}
 
 console.log("finished")
 
+
+var test = {
+    value1: 1,
+    text: "Hallo",
+    values: [
+        1, 2, 3
+    ]
+}
+var t = JSON.stringify(test)
+console.log(t)
 // import * as fs from 'fs'
 // import * as Path from 'path'
 // import * as http from 'http'
