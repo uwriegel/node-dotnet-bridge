@@ -5,6 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug Program",
+            "program": "'C:/Program Files/nodejs/node.exe'",
+            "preLaunchTask": "npm: build",
+            "args": [
+                "${workspaceFolder}/src/index.ts"
+             ]
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Launch Program",

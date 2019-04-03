@@ -2,7 +2,7 @@
     "name": "node-dotnet-bridge",
     "version": "0.0.1",
     "description": "Accessing dotnet core assemblies from node.js",
-    "main": "./build/Release/node-dotnet-bridge",
+    "main": "main.js",
     "scripts": {
         "install": "node-gyp rebuild"
     },
