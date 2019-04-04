@@ -1,7 +1,4 @@
-// console.log("bin bereit")
 // console.log(__dirname)
-
-// //"main": "./build/Release/node-dotnet-bridge",
 
 // class User {
 //     run(text) { console.log(text)}
@@ -13,11 +10,12 @@
 //var addon = require('./build/Debug/node-dotnet-bridge');
 var addon = require('./build/Release/node-dotnet-bridge');
 
-const NeuerProxy = eval(`
-(class NeuerProxy extends addon.ProxyObject
+const processor = eval(`
+(class Processor extends addon.ProxyObject
     {
-        executeSync(text) {
-            return "Von hier " + super.executeSync(text)
+        constructor() { super("Processor")} 
+        getObject(text) {
+            return JSON.parse(super.executeSync(text))
         }
     })`)
     
@@ -27,4 +25,5 @@ const NeuerProxy = eval(`
 
 // module.exports.User = User
 module.exports = addon
-module.exports.NeuerProxy = NeuerProxy
+// TODO: to C++
+module.exports.Processor = processor

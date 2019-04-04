@@ -1,5 +1,5 @@
-import { ProxyObject } from 'node-dotnet-bridge'
-var addon = require('node-dotnet-bridge');
+import { Processor } from 'node-dotnet-bridge'
+//var addon = require('node-dotnet-bridge');
 
 // try {
 // var aff = 
@@ -12,8 +12,8 @@ var addon = require('node-dotnet-bridge');
 
 //var affe = eval("var text = '{"value1":1,"text":"Hallo","values":[1,2,3]}'; JSON.parse(text)")
 
-
-const proxy = new ProxyObject("Processör😁😁")
+const processor = new Processor()
+//const proxy = new ProxyObject("Processör😁😁")
 
 // const NeuerProxy = eval(`
 
@@ -29,29 +29,36 @@ const proxy = new ProxyObject("Processör😁😁")
 
 
 
-const neuer = new addon.NeuerProxy("Wagenladüng")
-const test5 = neuer.executeSync("Wagenladüng")
+//const neuer = new addon.NeuerProxy("Wagenladüng")
 
-let result7 = proxy.executeSync("Wagenladüng")
+const test5 = processor.getObject("Wagenladüng")
 
 for (let i = 0; i < 10_000_000; i++) {
-    // var text = '{"value1":1,"text":"Hallo","values":[1,2,3]}'
-    // let res = JSON.parse(text)
-    let result = proxy.executeSync("Wagenladüng")
+    const test5 = processor.getObject("Wagenladüng")
 }
 
-console.log("finished")
+
+console.log("finished)")
+//let result7 = proxy.executeSync("Wagenladüng")
+
+// for (let i = 0; i < 10_000_000; i++) {
+//     // var text = '{"value1":1,"text":"Hallo","values":[1,2,3]}'
+//     // let res = JSON.parse(text)
+//     let result = proxy.executeSync("Wagenladüng")
+// }
+
+// console.log("finished")
 
 
-var test = {
-    value1: 1,
-    text: "Hallo",
-    values: [
-        1, 2, 3
-    ]
-}
-var t = JSON.stringify(test)
-console.log(t)
+// var test = {
+//     value1: 1,
+//     text: "Hallo",
+//     values: [
+//         1, 2, 3
+//     ]
+// }
+// var t = JSON.stringify(test)
+// console.log(t)
 // import * as fs from 'fs'
 // import * as Path from 'path'
 // import * as http from 'http'

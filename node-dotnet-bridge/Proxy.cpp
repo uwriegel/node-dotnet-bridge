@@ -23,7 +23,7 @@ NAN_METHOD(ProxyObject::ExecuteSync) {
     auto proxy = Nan::ObjectWrap::Unwrap<ProxyObject>(info.Holder());
 
 
-	// string text = "'{\"value1\":1,\"text\":\"Hallo\",\"values\":[1,2,3]}'";
+	// 
 	// string codetext = "var text = " + text + "; JSON.parse(text)";
 
     // auto code = Nan::New<v8::String>(codetext).ToLocalChecked();
@@ -31,7 +31,8 @@ NAN_METHOD(ProxyObject::ExecuteSync) {
     // Nan::MaybeLocal<v8::Value> result = Nan::RunScript(script.ToLocalChecked());
     //info.GetReturnValue().Set(result.ToLocalChecked());
 
-    auto cname = Nan::New("ProxyObject").ToLocalChecked();
+    const char* objResult = "{\"value1\":1,\"text\":\"Hallo\",\"values\":[1,2,3]}";
+    auto cname = Nan::New(objResult).ToLocalChecked();
     info.GetReturnValue().Set(cname);
 }
 
