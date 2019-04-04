@@ -1,75 +1,17 @@
 import { Processor } from 'node-dotnet-bridge'
-//var addon = require('node-dotnet-bridge');
-
-// try {
-// var aff = 
-// }
-// catch (err)
-// {
-//     console.log(err)
-// }
-
-
-//var affe = eval("var text = '{"value1":1,"text":"Hallo","values":[1,2,3]}'; JSON.parse(text)")
 
 const processor = new Processor()
-//const proxy = new ProxyObject("Processör😁😁")
 
-// const NeuerProxy = eval(`
-
-// const addon = require('node-dotnet-bridge')
-
-// (class NeuerProxy extends addon.ProxyObject
-// {
-//     executeSync(text) {
-//         return "Von hier " + super.executeSync(text)
-//     }
-// })`)
-
-
-
-
-//const neuer = new addon.NeuerProxy("Wagenladüng")
-
-const test5 = processor.getObject("Wagenladüng")
+const result = processor.getObject("Wagenladüng")
+console.log(result.values)
 
 for (let i = 0; i < 10_000_000; i++) {
-    const test5 = processor.getObject("Wagenladüng")
+    const result = processor.getObject("Wagenladüng")
 }
 
 
 console.log("finished)")
-//let result7 = proxy.executeSync("Wagenladüng")
 
-// for (let i = 0; i < 10_000_000; i++) {
-//     // var text = '{"value1":1,"text":"Hallo","values":[1,2,3]}'
-//     // let res = JSON.parse(text)
-//     let result = proxy.executeSync("Wagenladüng")
-// }
-
-// console.log("finished")
-
-
-// var test = {
-//     value1: 1,
-//     text: "Hallo",
-//     values: [
-//         1, 2, 3
-//     ]
-// }
-// var t = JSON.stringify(test)
-// console.log(t)
-// import * as fs from 'fs'
-// import * as Path from 'path'
-// import * as http from 'http'
-// import { initialize, unInitialize, ProxyObject, executeAsync, runEventLoop } from 'node-dotnet-bridge'
-
-// // declare class ProcessorType {
-// //     GetTest(text: string, number: Number, datetime: Date): string
-// //     Add(a: number, b: number): number
-// // }
-
-// // let Processor: any
 
 // const log = function(text: string) { console.log(text) }
 // const deserialize = function (json: string) { 
