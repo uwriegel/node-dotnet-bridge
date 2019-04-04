@@ -1,4 +1,5 @@
 import { ProxyObject } from 'node-dotnet-bridge'
+var addon = require('node-dotnet-bridge');
 
 // try {
 // var aff = 
@@ -13,6 +14,25 @@ import { ProxyObject } from 'node-dotnet-bridge'
 
 
 const proxy = new ProxyObject("Processör😁😁")
+
+// const NeuerProxy = eval(`
+
+// const addon = require('node-dotnet-bridge')
+
+// (class NeuerProxy extends addon.ProxyObject
+// {
+//     executeSync(text) {
+//         return "Von hier " + super.executeSync(text)
+//     }
+// })`)
+
+
+
+
+const neuer = new addon.NeuerProxy("Wagenladüng")
+const test5 = neuer.executeSync("Wagenladüng")
+
+let result7 = proxy.executeSync("Wagenladüng")
 
 for (let i = 0; i < 10_000_000; i++) {
     // var text = '{"value1":1,"text":"Hallo","values":[1,2,3]}'
