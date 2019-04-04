@@ -25,6 +25,7 @@ declare module 'node-dotnet-bridge' {
 
     class Processor {
         getObject(payload: string): GetObjectResult
+        executeAsync(payload: string, cb: (result: string)=>void): void
     }
 }
 

@@ -1,4 +1,6 @@
+#include <thread>
 #include "Proxy.h"
+#include "AsyncContext.h"
 using namespace std;
 using namespace Nan;
 
@@ -22,15 +24,6 @@ NAN_METHOD(ProxyObject::ExecuteSync) {
     // `Unwrap` refer C++ object from JS Object
     auto proxy = Nan::ObjectWrap::Unwrap<ProxyObject>(info.Holder());
 
-
-	// 
-	// string codetext = "var text = " + text + "; JSON.parse(text)";
-
-    // auto code = Nan::New<v8::String>(codetext).ToLocalChecked();
-    // Nan::MaybeLocal<Nan::BoundScript> script = Nan::CompileScript(code);
-    // Nan::MaybeLocal<v8::Value> result = Nan::RunScript(script.ToLocalChecked());
-    //info.GetReturnValue().Set(result.ToLocalChecked());
-
     const char* objResult = "{\"value1\":1,\"text\":\"Hallo\",\"values\":[1,2,3]}";
     auto cname = Nan::New(objResult).ToLocalChecked();
     info.GetReturnValue().Set(cname);
@@ -38,6 +31,17 @@ NAN_METHOD(ProxyObject::ExecuteSync) {
 
 NAN_METHOD(ProxyObject::ExecuteAsync) {
     auto proxy = Nan::ObjectWrap::Unwrap<ProxyObject>(info.Holder());
+
+    auto callback = v8::Local<v8::Function>::Cast(info[1]);
+    auto asyncContext = new AsyncContext(callback);
+    auto t1 = thread([asyncContext]()-> void {
+        this_thread::sleep_for(10s);
+        const char *res = "This is the data for callbäck!!!😁😁😁👏👏";
+        asyncContext->data = new char[strlen(res)+1];
+        strcpy((char*)asyncContext->data, res);
+        asyncContext->ExecuteAction();
+    });
+    t1.detach();
 }
 
 NAN_MODULE_INIT(ProxyObject::Init) {

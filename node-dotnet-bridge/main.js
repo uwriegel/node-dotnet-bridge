@@ -1,5 +1,5 @@
-//var addon = require('./build/Debug/node-dotnet-bridge');
-var addon = require('./build/Release/node-dotnet-bridge');
+var addon = require('./build/Debug/node-dotnet-bridge');
+//var addon = require('./build/Release/node-dotnet-bridge');
 
 console.log("Dynamically creating classes")
 const className = "Processor"

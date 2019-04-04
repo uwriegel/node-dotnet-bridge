@@ -4,7 +4,8 @@
             "target_name": "node-dotnet-bridge",
             "sources": [ 
                 "addon.cpp",
-                "proxy.cpp"
+                "Proxy.cpp",
+                "AsyncContext.cpp"
             ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")"
