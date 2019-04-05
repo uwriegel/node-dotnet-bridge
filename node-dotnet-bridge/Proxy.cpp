@@ -34,8 +34,14 @@ NAN_METHOD(ProxyObject::ExecuteAsync) {
 
     auto callback = v8::Local<v8::Function>::Cast(info[1]);
     auto asyncContext = new AsyncContext(callback);
+
+    // const char *res = "This is the data for callbäck!!!😁😁😁👏👏";
+    // asyncContext->data = new char[strlen(res)+1];
+    // strcpy((char*)asyncContext->data, res);
+    // asyncContext->ExecuteAction();
+
     auto t1 = thread([asyncContext]()-> void {
-        this_thread::sleep_for(10s);
+        //this_thread::sleep_for(10s);
         const char *res = "This is the data for callbäck!!!😁😁😁👏👏";
         asyncContext->data = new char[strlen(res)+1];
         strcpy((char*)asyncContext->data, res);

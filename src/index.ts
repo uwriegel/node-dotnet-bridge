@@ -2,9 +2,19 @@ import { Processor } from 'node-dotnet-bridge'
 
 const processor = new Processor()
 
-processor.executeAsync("Das kommt äüß javascript", result => {
-    console.log(result)
-})
+// processor.executeAsync("Das kommt äüß javascript", result => {
+//     console.log(result)
+// })
+
+const runAsync = async function() {
+    const res = await processor.executeAsync("Das kommt äüß javascript")
+    for (let i = 0; i < 100_000; i++) {
+        const res = await processor.executeAsync("Das kommt äüß javascript")
+    }
+    console.log("finished")
+}
+
+runAsync()
 
 const result = processor.getObject("Wagenladüng")
 console.log(result.values)
